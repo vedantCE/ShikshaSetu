@@ -1,11 +1,5 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -34,22 +28,55 @@ export const TracingScreen: React.FC<TracingScreenProps> = ({
   const letterPath = getLetterPath(letter);
   const letterPoints = parseSVGPath(letterPath);
 
-  const handleComplete = async (userPoints: { x: number; y: number }[]) => {
-    const accuracy = validateTracing(userPoints, letterPoints);
-    const isSuccess = accuracy >= TRACING_THRESHOLD;
+  const isMountedRef = useRef(true);
 
-    setSuccess(isSuccess);
-    setShowFeedback(true);
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
-    if (isSuccess) {
-      const earnedStars = accuracy >= 0.9 ? 3 : accuracy >= 0.8 ? 2 : 1;
-      setStars(earnedStars);
-      await saveProgress(letter, earnedStars);
-      // Haptic feedback removed - package not installed
-    }
+  const handleComplete = (userPoints: { x: number; y: number }[]) => {
+    // Delay slightly to allow final render
+    setTimeout(() => {
+      if (!isMountedRef.current) return;
 
-    setTimeout(() => setShowFeedback(false), 2000);
+      try {
+        console.log('TRACE END - Validating', userPoints.length);
+
+        // 🔥 HARD LIMIT points (CRITICAL)
+        // Ensure we don't block JS thread with huge arrays
+        const sampledPoints = userPoints.slice(0, 300);
+
+        const accuracy = validateTracing(sampledPoints, letterPoints);
+        console.log('Accuracy:', accuracy);
+
+        const isSuccess = accuracy >= TRACING_THRESHOLD;
+
+        setSuccess(isSuccess);
+        setShowFeedback(true);
+
+        if (isSuccess) {
+          const earnedStars =
+            accuracy >= 0.9 ? 3 : accuracy >= 0.8 ? 2 : 1;
+
+          setStars(earnedStars);
+          saveProgress(letter, earnedStars).catch((err) => console.log('Save error', err));
+        }
+
+        // Auto-hide feedback after delay
+        setTimeout(() => {
+          if (isMountedRef.current) {
+            setShowFeedback(false);
+          }
+        }, 3000);
+
+      } catch (e) {
+        console.log('Tracing error', e);
+      }
+    }, 100);
   };
+
 
   const handleReset = () => {
     setKey(prev => prev + 1);

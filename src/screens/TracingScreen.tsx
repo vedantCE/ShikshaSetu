@@ -8,7 +8,7 @@ import { SuccessFeedback } from '../components/SuccessFeedback';
 import { getLetterPath } from '../constants/LetterPaths';
 import { parseSVGPath, validateTracing } from '../utils/tracingValidator';
 import { saveProgress } from '../storage/progressStore';
-import { TRACING_THRESHOLD } from '../constants/Alphabet';
+import { TRACING_THRESHOLD, ALPHABET } from '../constants/Alphabet';
 
 type TracingScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Tracing'>;
@@ -57,19 +57,37 @@ export const TracingScreen: React.FC<TracingScreenProps> = ({
         setShowFeedback(true);
 
         if (isSuccess) {
-          const earnedStars =
-            accuracy >= 0.9 ? 3 : accuracy >= 0.8 ? 2 : 1;
+          // ⭐ Star Logic: 90%+ = 4 stars, 70-89% = 3 stars
+          const earnedStars = accuracy >= 0.9 ? 4 : 3;
 
           setStars(earnedStars);
           saveProgress(letter, earnedStars).catch((err) => console.log('Save error', err));
-        }
 
-        // Auto-hide feedback after delay
-        setTimeout(() => {
-          if (isMountedRef.current) {
-            setShowFeedback(false);
-          }
-        }, 3000);
+          // 🚀 Auto-Advance Logic
+          setTimeout(() => {
+            if (!isMountedRef.current) return;
+
+            const currentIndex = ALPHABET.indexOf(letter);
+            const nextIndex = currentIndex + 1;
+
+            if (nextIndex < ALPHABET.length) {
+              const nextLetter = ALPHABET[nextIndex];
+              // Replace avoids infinite back-stack
+              navigation.replace('Tracing', { letter: nextLetter });
+            } else {
+              // End of alphabet - go back to grid
+              navigation.navigate('LetterGrid');
+            }
+          }, 2000); // 2 seconds delay
+        } else {
+          // Failure - auto-hide after 2s
+          setTimeout(() => {
+            if (isMountedRef.current) {
+              setShowFeedback(false);
+              setKey(prev => prev + 1); // Auto-reset canvas
+            }
+          }, 2000);
+        }
 
       } catch (e) {
         console.log('Tracing error', e);

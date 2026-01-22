@@ -4,10 +4,14 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { HomeScreen } from '../screens/HomeScreen';
 import { LetterGridScreen } from '../screens/LetterGridScreen';
 import { TracingScreen } from '../screens/TracingScreen';
+import LoginScreen from '../screens/LoginScreen';
+import RegistrationScreen from '../screens/RegistrationScreen';
 
 export type RootStackParamList = {
   Home: undefined;
   LetterGrid: undefined;
+  Login: undefined;
+  Register: undefined;
   Tracing: { letter: string };
 };
 
@@ -39,6 +43,19 @@ export const RootNavigator: React.FC = () => {
           component={TracingScreen}
           options={{ title: 'Trace Letter' }}
         />
+        <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{ headerShown: false }}
+ />
+ <Stack.Screen
+  name="Register"
+  component={RegistrationScreen}
+  options={{ headerShown: false }}
+/>
+
+
+       
       </Stack.Navigator>
     </NavigationContainer>
   );

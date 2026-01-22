@@ -10,14 +10,33 @@ type HomeScreenProps = {
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>ABC Learn</Text>
-      <Text style={styles.subtitle}>Alphabet Tracing</Text>
-      
-      <TouchableOpacity
+      <Text style={styles.title}>Shiksha-Setu</Text>
+      <Text style={styles.subtitle}>An Educational Platform</Text>
+
+      {/* <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate('LetterGrid')}
       >
         <Text style={styles.buttonText}>Start Learning</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('Login')}
+      >
+        <Text style={styles.buttonText}>Login</Text>
+      </TouchableOpacity> */}
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('Register')}
+      >
+        <Text style={styles.buttonText}>Register</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.button, { marginTop: 20 }]}
+        onPress={() => navigation.navigate('Login')}
+      >
+        <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
     </View>
   );

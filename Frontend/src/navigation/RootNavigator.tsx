@@ -6,6 +6,7 @@ import { LetterGridScreen } from '../screens/LetterGridScreen';
 import { TracingScreen } from '../screens/TracingScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegistrationScreen from '../screens/RegistrationScreen';
+import ActivityHubScreen from '../screens/ActivityHubScreen';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -13,6 +14,7 @@ export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   Tracing: { letter: string };
+  ActivityHub: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -28,6 +30,12 @@ export const RootNavigator: React.FC = () => {
           headerTitleStyle: { fontWeight: 'bold' },
         }}
       >
+        <Stack.Screen
+  name="ActivityHub"
+  component={ActivityHubScreen}
+  options={{ title: 'Activities' }}
+/>
+
         <Stack.Screen
           name="Home"
           component={HomeScreen}

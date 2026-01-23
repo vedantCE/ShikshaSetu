@@ -17,7 +17,7 @@ const LoginScreen = ({ navigation }: any) => {
   const handleSubmit = () => {
     if (email === STATIC_USER.email && rollNo === STATIC_USER.rollNo) {
       Alert.alert('Login Successful');
-      navigation.replace('LetterGrid');
+      navigation.replace('ActivityHub');
     } else {
       Alert.alert('Invalid Credentials');
     }

@@ -2,16 +2,18 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
-
+import { useAuth } from '../context/AuthContext';
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'ActivityHub'>;
 };
 
-const ActivityHubScreen: React.FC<Props> = ({ navigation }) => {
+const ActivityHubScreen = ({ navigation }: any) => {
+  const { currentStudent } = useAuth();
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Choose Activity</Text>
-
+      <Text style={styles.title}>
+        Choose Activity {currentStudent ? `for ${currentStudent.name}` : ''}
+      </Text>
       {/* ABC Tracing */}
       <TouchableOpacity
         style={styles.card}

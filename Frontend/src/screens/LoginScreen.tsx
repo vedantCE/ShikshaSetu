@@ -31,6 +31,7 @@ const LoginScreen = ({ navigation }: any) => {
         <Text>Email</Text>
         <TextInput
           placeholder="Enter your Student Email"
+          placeholderTextColor={'gray'}
           style={styles.input}
           value={email}
           onChangeText={setEmail}
@@ -41,6 +42,7 @@ const LoginScreen = ({ navigation }: any) => {
         <Text>Student Roll No.</Text>
         <TextInput
           placeholder="Enter your Student Roll-No"
+          placeholderTextColor={'gray'}
           style={styles.input}
           value={rollNo}
           onChangeText={setRollNo}

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import { ImageSourcePropType } from 'react-native';
 
 type Role = 'parent' | 'teacher';
 
@@ -13,7 +14,13 @@ type Student = {
   name: string;
   age?: number;
   disorder?: string;
+  avatar?: ImageSourcePropType;  // ← Add this! "?" makes it optional 
 };
+//Why ImageSourcePropType?
+// This is the official React Native type for <Image source={...} />.
+// require('../path.png') returns a number (local asset ID).
+// Remote images use { uri: 'https://...' }.
+
 
 type AuthContextType = {
   user: User | null;

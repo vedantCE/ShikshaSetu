@@ -77,8 +77,10 @@ import { QuizScreen } from '../screens/QuizScreen';
 import ActivityHubScreen from '../screens/ActivityHubScreen';
 import { LetterGridScreen } from '../screens/LetterGridScreen';
 import { TracingScreen } from '../screens/TracingScreen'; // Adjust path if needed
+import VideoSplashScreen from '../components/VideoSplashScreen';
 
 export type RootStackParamList = {
+  Splash: undefined; // Add launch screen
   Landing: undefined;
   TeacherLogin: undefined;
   Dashboard: undefined;
@@ -90,20 +92,73 @@ export type RootStackParamList = {
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+const SplashScreen = ({ navigation }: any) => {
+  return (
+    <VideoSplashScreen
+      onVideoEnd={() => {
+        navigation.replace('Landing'); // go to HomeScreen
+      }}
+    />
+  );
+};
 
 export const RootNavigator = () => {
   return (
     <AuthProvider>
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="Landing" screenOptions={{ headerStyle: { backgroundColor: '#4A90E2' }, headerTintColor: '#FFF' }}>
-          <Stack.Screen name="Landing" component={HomeScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="TeacherLogin" component={TeacherLoginScreen} options={{ title: 'Teacher Login' }} />
-          <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Dashboard' }} />
-          <Stack.Screen name="AddStudent" component={AddStudentScreen} options={{ title: 'Add Child/Student' }} />
-          <Stack.Screen name="Quiz" component={QuizScreen} options={{ title: 'Assessment Quiz' }} />
-          <Stack.Screen name="ActivityHub" component={ActivityHubScreen} options={{ title: 'Activities' }} />
-          <Stack.Screen name="LetterGrid" component={LetterGridScreen} options={{ title: 'Select Letter' }} />
-          <Stack.Screen name="Tracing" component={TracingScreen} options={{ title: 'Trace Letter' }} />
+        <Stack.Navigator
+          initialRouteName="Splash"
+          screenOptions={{
+            headerStyle: { backgroundColor: '#4A90E2' },
+            headerTintColor: '#FFF',
+          }}
+        >
+          <Stack.Screen
+            name="Splash"
+            component={SplashScreen}
+            options={{ headerShown: false }}
+          />
+
+          <Stack.Screen
+            name="Landing"
+            component={HomeScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="TeacherLogin"
+            component={TeacherLoginScreen}
+            options={{ title: 'Teacher Login' }}
+          />
+          <Stack.Screen
+            name="Dashboard"
+            component={DashboardScreen}
+            options={{ title: 'Dashboard' }}
+          />
+          <Stack.Screen
+            name="AddStudent"
+            component={AddStudentScreen}
+            options={{ title: 'Add Child/Student' }}
+          />
+          <Stack.Screen
+            name="Quiz"
+            component={QuizScreen}
+            options={{ title: 'Assessment Quiz' }}
+          />
+          <Stack.Screen
+            name="ActivityHub"
+            component={ActivityHubScreen}
+            options={{ title: 'Activities' }}
+          />
+          <Stack.Screen
+            name="LetterGrid"
+            component={LetterGridScreen}
+            options={{ title: 'Select Letter' }}
+          />
+          <Stack.Screen
+            name="Tracing"
+            component={TracingScreen}
+            options={{ title: 'Trace Letter' }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </AuthProvider>

@@ -120,7 +120,6 @@ dependencies {
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
 // Why at the Bottom we ad ?
-
 // Gradle processes files top-to-bottom.
 // Adding it at the end ensures it runs after all other configurations (like dependencies).
 // This is exactly what the official react-native-vector-icons docs recommend.

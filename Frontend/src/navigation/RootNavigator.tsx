@@ -74,7 +74,7 @@ import { TeacherLoginScreen } from '../screens/TeacherLoginScreen';
 import { DashboardScreen } from '../screens/DashboardScreen';
 import { AddStudentScreen } from '../screens/AddStudentScreen';
 import { QuizScreen } from '../screens/QuizScreen';
-import ActivityHubScreen from '../screens/ActivityHubScreen';
+import {ActivityHubScreen} from '../screens/ActivityHubScreen';
 import { LetterGridScreen } from '../screens/LetterGridScreen';
 import { TracingScreen } from '../screens/TracingScreen'; // Adjust path if needed
 import VideoSplashScreen from '../components/VideoSplashScreen';

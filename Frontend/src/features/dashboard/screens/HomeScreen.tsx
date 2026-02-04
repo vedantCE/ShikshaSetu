@@ -8,6 +8,7 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../auth/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -39,12 +40,12 @@ export const HomeScreen = ({ navigation }: any) => {
 
   const enterAsParent = () => {
     setSelectedRole('parent');
-    navigation.navigate('ParentLogin');
+    navigation.navigate('ParentSignup');
   };
 
   const enterAsTeacher = () => {
     setSelectedRole('teacher');
-    navigation.navigate('TeacherLogin');
+    navigation.navigate('TeacherSignup');
   };
 
   const renderCard = ({ item }: any) => (
@@ -58,7 +59,7 @@ export const HomeScreen = ({ navigation }: any) => {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* Header */}
       <Text style={styles.appTitle}>ShikshaSetu</Text>
 
@@ -81,22 +82,22 @@ export const HomeScreen = ({ navigation }: any) => {
 
   <View style={styles.choiceContainer}>
     <TouchableOpacity style={styles.choiceCard} onPress={enterAsParent}>
-       <Icon name="home-variant" size={32} color="#6c2bee" />
-      <Text style={styles.choiceText}>At Home(Parent)</Text>
+       <Icon name="home-variant" size={32} color="#1B337F" />
+      <Text style={styles.choiceText}>At Home</Text>
     </TouchableOpacity>
 
     <TouchableOpacity
       style={[styles.choiceCard, { marginTop: 20 }]}
       onPress={enterAsTeacher}
     >
-       <Icon name="school" size={32} color="#6c2bee" />
+       <Icon name="school" size={32} color="#1B337F" />
       <Text style={styles.choiceText}>At School</Text>
     </TouchableOpacity>
   </View>
 </View>
 
 
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -111,7 +112,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 22,
     fontWeight: '700',
-    color: '#6c2bee',
+    color: '#1B337F',
     marginBottom: 20,
   },
 

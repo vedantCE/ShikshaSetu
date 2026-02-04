@@ -62,7 +62,7 @@
 //             component={TeacherLoginScreen}
 //             options={{
 //               title: 'Teacher Login',
-//               headerStyle: { backgroundColor: '#6c2bee' },
+//               headerStyle: { backgroundColor: '#1B337F' },
 //               headerTintColor: '#fff', // White text/arrow
 //               headerTitleStyle: { fontWeight: 'bold' },
 //             }}
@@ -169,7 +169,7 @@ const AppNavigator = () => {
     <Stack.Navigator
       initialRouteName="Splash"
       screenOptions={{
-        headerStyle: { backgroundColor: '#6c2bee' },
+        headerStyle: { backgroundColor: '#1B337F' },
         headerTintColor: '#fff',
         headerTitleStyle: { fontWeight: 'bold' },
       }}
@@ -243,24 +243,24 @@ const AppNavigator = () => {
               <Stack.Screen
                 name="ParentLogin"
                 component={ParentLoginScreen}
-                options={{ title: 'Parent Login' }}
+                options={{ headerShown: false }}
               />
               <Stack.Screen
                 name="ParentSignup"
                 component={ParentSignupScreen}
-                options={{ title: 'Parent Sign Up' }}
+                options={{ headerShown: false }}
               />
 
               {/* Teacher flow */}
               <Stack.Screen
                 name="TeacherLogin"
                 component={TeacherLoginScreen}
-                options={{ title: 'Teacher Login' }}
+                options={{ headerShown: false }}
               />
               <Stack.Screen
                 name="TeacherSignup"
                 component={TeacherSignupScreen}
-                options={{ title: 'Teacher Sign Up' }}
+                options={{ headerShown: false }}
               />
             </>
           )}

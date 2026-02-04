@@ -9,6 +9,7 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const TeacherAddStudentScreen = ({ navigation }: any) => {
@@ -38,7 +39,8 @@ const TeacherAddStudentScreen = ({ navigation }: any) => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f6f8f8' }}>
+      <ScrollView style={styles.container}>
       <Text style={styles.title}>Add New Student</Text>
 
       <Pressable style={styles.avatarContainer} onPress={pickAvatar}>
@@ -94,7 +96,8 @@ const TeacherAddStudentScreen = ({ navigation }: any) => {
       <Pressable style={styles.submitButton} onPress={handleAdd}>
         <Text style={styles.submitText}>Create Student</Text>
       </Pressable>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
@@ -108,7 +111,7 @@ const styles = StyleSheet.create({
   },
   avatarContainer: { alignItems: 'center', marginBottom: 24 },
   avatar: { width: 120, height: 120, borderRadius: 60 },
-  avatarText: { marginTop: 12, color: '#6c2bee', fontSize: 16 },
+  avatarText: { marginTop: 12, color: '#1B337F', fontSize: 16 },
   input: {
     backgroundColor: '#fff',
     borderRadius: 16,
@@ -117,9 +120,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: '#ddd',
+    color: '#000000',
   },
   submitButton: {
-    backgroundColor: '#6c2bee',
+    backgroundColor: '#1B337F',
     padding: 18,
     borderRadius: 30,
     alignItems: 'center',

@@ -57,7 +57,7 @@ export const DashboardScreen = ({ navigation }: any) => {
       onPress={() => navigation.navigate('AddStudent')}
     >
       <View style={styles.addCircle}>
-        <Icon name="plus" size={36} color="#6c2bee" />
+        <Icon name="plus" size={36} color="#1B337F" />
       </View>
       <Text style={styles.addText}>Add Profile</Text>
     </TouchableOpacity>
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
 
   date: {
     fontSize: 14,
-    color: '#6c2bee',
+    color: '#1B337F',
     marginBottom: 6,
   },
 

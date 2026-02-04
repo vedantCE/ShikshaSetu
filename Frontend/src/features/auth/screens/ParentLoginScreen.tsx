@@ -48,7 +48,7 @@
 
 //       {/* Logo */}
 //       <View style={styles.logoBox}>
-//         <Icon name="home-outline" size={40} color="#6c2bee" />
+//         <Icon name="home-outline" size={40} color="#1B337F" />
 //       </View>
 
 //       {/* Heading */}
@@ -121,314 +121,111 @@
 //   );
 // };
 
-import React, { useState, useLayoutEffect } from 'react'; // ← added useLayoutEffect
+import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   StyleSheet,
   Alert,
+  TouchableOpacity,
+  Switch,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAuth } from '../context/AuthContext';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { AuthLayout } from '../components/AuthLayout';
+import { CustomInput } from '../components/CustomInput';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export const ParentLoginScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [secureText, setSecureText] = useState(true);
+  const [rememberMe, setRememberMe] = useState(false);
   const { login } = useAuth();
-
-  // ← ADD THIS BLOCK FOR WORKING BACK ARROW
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerShown: true,
-      title: 'Parent Login',
-      headerStyle: { backgroundColor: '#6c2bee' },
-      headerTintColor: '#fff',
-      headerTitleStyle: { fontWeight: 'bold' },
-      headerLeft: () => 
-        navigation.canGoBack() ? (
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={{ marginLeft: 16, padding: 8 }} // good touch area
-          >
-            <Icon name="arrow-left" size={28} color="#fff" />
-          </TouchableOpacity>
-        ) : null
-    });
-  }, [navigation]);
 
   const handleLogin = () => {
     if (email === 'parent@example.com' && password === 'parent123') {
       login(email);
-      // Navigation will be handled automatically by RootNavigator based on auth state
     } else {
       Alert.alert('Invalid Credentials', 'Use parent@example.com / parent123');
     }
   };
 
-  const handleGoogleLogin = () => {
-    Alert.alert('Coming Soon', 'Google login (dummy)');
-  };
-
-  const handleAppleLogin = () => {
-    Alert.alert('Coming Soon', 'Apple login (dummy)');
+  const handleTabChange = (tab: 'login' | 'signup') => {
+    if (tab === 'signup') {
+      navigation.replace('ParentSignup');
+    }
   };
 
   return (
-    <KeyboardAwareScrollView
-      style={{ flex: 1, backgroundColor: '#f6f6f8' }}
-      contentContainerStyle={{
-        paddingHorizontal: 24,
-        paddingTop: 40,
-        paddingBottom: 40,
-        flexGrow: 1,
-      }}
-      enableOnAndroid={true}
-      extraHeight={110}
-      keyboardShouldPersistTaps="handled"
+    <AuthLayout
+      title="Welcome Back Parent"
+      subtitle="Sign up to support your child’s learning at home"
+      activeTab="login"
+      onTabChange={handleTabChange}
+      primaryButtonText="Login"
+      onPrimaryButtonPress={handleLogin}
+      onBackPress={() => navigation.goBack()}
+      footer={
+        <View style={styles.footerRow}>
+          <TouchableOpacity 
+            style={styles.rememberMeContainer}
+            onPress={() => setRememberMe(!rememberMe)}
+          >
+            <Icon 
+              name={rememberMe ? "checkbox-marked" : "checkbox-blank-outline"} 
+              size={20} 
+              color={rememberMe ? "#1B337F" : "#808080"} 
+            />
+            <Text style={styles.rememberMeText}>Remember Me</Text>
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+          </TouchableOpacity>
+        </View>
+      }
     >
-      {/* Logo */}
-      <View style={styles.logoBox}>
-        <Icon name="home-outline" size={40} color="#6c2bee" />
-      </View>
-
-      {/* Heading */}
-      <Text style={styles.heading}>Welcome Back Parent</Text>
-
-      {/* Social Buttons – side by side + responsive */}
-      <View style={styles.socialRow}>
-        <TouchableOpacity
-          style={styles.socialButton}
-          onPress={handleGoogleLogin}
-        >
-          <Icon name="google" size={20} color="#DB4437" />
-          <Text style={styles.socialText}>Google</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.socialButton}
-          onPress={handleAppleLogin}
-        >
-          <Icon name="apple" size={20} color="#000" />
-          <Text style={styles.socialText}>Apple</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Divider */}
-      <View style={styles.divider}>
-        <View style={styles.line} />
-        <Text style={styles.orText}>or</Text>
-        <View style={styles.line} />
-      </View>
-
-      <Text style={styles.label}>Email</Text>
-      <View style={styles.inputWrapper}>
-        <TextInput
-          placeholder="Enter your email"
-          placeholderTextColor={'gray'}
-          value={email}
-          onChangeText={setEmail}
-          style={styles.input}
-          keyboardType="email-address"
-        />
-        <Icon name="email-outline" size={20} color="#888" />
-      </View>
-
-      {/* Password */}
-      <View style={styles.passwordHeader}>
-        <Text style={styles.label}>Password</Text>
-        <Text style={styles.forgot}>Forgot?</Text>
-      </View>
-
-      <View style={styles.inputWrapper}>
-        <TextInput
-          placeholder="Enter your password"
-          placeholderTextColor={'gray'}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          style={styles.input}
-        />
-        <Icon name="lock-outline" size={20} color="#888" />
-      </View>
-
-      {/* Continue Button */}
-      <TouchableOpacity style={styles.primaryButton} onPress={handleLogin}>
-        <Text style={styles.primaryText}>Continue</Text>
-        <Icon name="arrow-right" size={22} color="#FFF" />
-      </TouchableOpacity>
-
-      {/* Footer */}
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Don't have an account?</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('ParentSignup')}>
-          <Text style={styles.signup}> Sign Up</Text>
-        </TouchableOpacity>
-      </View>
-    </KeyboardAwareScrollView>
+      <CustomInput
+        label="Email"
+        placeholder="wade@gmail.com"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
+      <CustomInput
+        label="Password"
+        placeholder="xxxxxxxx"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry={secureText}
+        rightIcon={secureText ? "eye-off-outline" : "eye-outline"}
+        onRightIconPress={() => setSecureText(!secureText)}
+      />
+    </AuthLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f6f6f8',
-  },
-
-  backButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-  },
-
-  logoBox: {
-    alignSelf: 'center',
-    width: 80,
-    height: 80,
-    borderRadius: 20,
-    backgroundColor: '#FFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 20,
-    elevation: 3,
-  },
-
-  heading: {
-    fontSize: 28, // Size 32->28
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: 30,
-    color: '#120d1b',
-  },
-
-  socialButton: {
-    // flexDirection: 'row',
-    // alignItems: 'center',
-    // justifyContent: 'center',
-    // height: 56,
-    // borderRadius: 28,
-    // backgroundColor: '#FFF',
-    // borderWidth: 2,
-    // borderColor: '#e0e0e0',
-    // marginBottom: 12,
-    // gap: 10,
-    flex: 1, // each takes half space
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 52, // slightly shorter than before
-    borderRadius: 26,
-    backgroundColor: '#FFF',
-    borderWidth: 1.5,
-    borderColor: '#e0e0e0',
-    gap: 10,
-  },
-  socialRow: {
+  footerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 24, // space before "or" divider
-    gap: 12, // small gap between buttons
-  },
-  socialText: {
-    // fontSize: 16,
-    // fontWeight: '700',
-    // color: '#120d1b',
-    fontSize: 15, // slightly smaller text
-    fontWeight: '700',
-    color: '#120d1b',
-  },
-
-  divider: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 24,
-  },
-
-  line: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#ccc',
-  },
-
-  orText: {
-    marginHorizontal: 12,
-    color: '#888',
-    fontWeight: '600',
-  },
-
-  label: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 6,
-    color: '#120d1b',
-  },
-
-  passwordHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     marginTop: 12,
-    color: 'black',
   },
-
-  forgot: {
-    color: '#6c2bee',
-    fontWeight: '600',
-  },
-
-  inputWrapper: {
+  rememberMeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: '#ddd',
-    paddingHorizontal: 16,
-    height: 56,
-    marginBottom: 16,
+    gap: 8,
   },
-
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: '#120d1b',
+  rememberMeText: {
+    fontSize: 14,
+    color: '#808080',
+    fontWeight: '500',
   },
-
-  primaryButton: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#6c2bee',
-    height: 56,
-    borderRadius: 28,
-    gap: 10,
-    marginTop: 10,
-    elevation: 4,
-  },
-
-  primaryText: {
-    color: '#FFF',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 30,
-  },
-
-  footerText: {
-    color: '#666',
-    fontSize: 16,
-  },
-
-  signup: {
-    color: '#6c2bee',
-    fontSize: 16,
+  forgotPasswordText: {
+    fontSize: 14,
+    color: '#1B337F',
     fontWeight: '700',
   },
 });
+

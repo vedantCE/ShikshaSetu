@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 28, fontWeight: '800', textAlign: 'center', marginBottom: 32 },
   avatarContainer: { alignItems: 'center', marginBottom: 32 },
   avatar: { width: 120, height: 120, borderRadius: 60 },
-  avatarText: { marginTop: 12, color: '#6c2bee', fontSize: 16 },
+  avatarText: { marginTop: 12, color: '#1B337F', fontSize: 16 },
   input: {
     backgroundColor: '#fff',
     borderRadius: 16,
@@ -65,8 +65,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: '#ddd',
+    color: '#000000',
   },
-  submitButton: { backgroundColor: '#6c2bee', padding: 18, borderRadius: 30, alignItems: 'center' },
+  submitButton: { backgroundColor: '#1B337F', padding: 18, borderRadius: 30, alignItems: 'center' },
   submitText: { color: '#fff', fontSize: 18, fontWeight: '700' },
 });
 

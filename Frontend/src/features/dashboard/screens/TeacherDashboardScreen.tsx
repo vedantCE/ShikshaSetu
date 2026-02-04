@@ -6,107 +6,166 @@ import {
   FlatList,
   Pressable,
   Image,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAuth } from '../../auth/context/AuthContext';
+import LiveClock from '../../../components/LiveClock';
 
 const dummyStudents = [
   {
     id: '1',
-    name: 'Aarav Sharma',
+    name: 'Aarav',
     age: 8,
     disorder: 'Autism Spectrum',
-    avatar: require('../assets/Homescreen/puzzleGame.png'), // Replace with your avatar assets.png
+    avatar: require('../assets/Homescreen/puzzleGame.png'),
   },
   {
     id: '2',
-    name: 'Isha Patel',
+    name: 'Priya',
     age: 7,
     disorder: 'ADHD',
     avatar: require('../assets/Homescreen/puzzleGame.png'),
   },
-  // Add more dummy students
+  {
+    id: '3',
+    name: 'Rohan',
+    age: 9,
+    disorder: 'ID',
+    avatar: require('../assets/Homescreen/coLlearning.png'),
+  },
 ];
 
 const TeacherDashboardScreen = ({ navigation }:any) => {
-  const { user } = useAuth(); // Gets teacher info
+  const { user } = useAuth();
 
   const renderStudent = ({ item }:any) => (
     <Pressable
-      style={styles.studentCard}
+      style={styles.profileCard}
       onPress={() => {
-        // Later: setCurrentStudent(item) in AuthContext
         navigation.navigate('ActivityHub');
       }}
     >
-      <Image source={item.avatar} style={styles.avatar} />
-      <View style={styles.studentInfo}>
-        <Text style={styles.studentName}>{item.name}</Text>
-        <Text style={styles.studentDetail}>Age: {item.age}</Text>
-        <Text style={styles.studentDetail}>Disorder: {item.disorder}</Text>
+      <View style={styles.avatarContainer}>
+        <Image source={item.avatar} style={styles.avatar} />
       </View>
-      <Icon name="chevron-right" size={28} color="#888" />
+      <Text style={styles.profileName}>{item.name}</Text>
+    </Pressable>
+  );
+
+  const renderAddProfile = () => (
+    <Pressable
+      style={styles.addProfileCard}
+      onPress={() => navigation.navigate('TeacherAddStudent')}
+    >
+      <View style={styles.addIconContainer}>
+        <Icon name="plus" size={48} color="#A0A0A0" />
+      </View>
+      <Text style={styles.addProfileText}>Add Profile</Text>
     </Pressable>
   );
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>My Students</Text>
-        <Text style={styles.subtitle}>Hello, {user?.name || 'Teacher'}!</Text>
+        <LiveClock />
+        <Text style={styles.title}>Who is learning today?</Text>
       </View>
 
       <FlatList
-        data={dummyStudents}
-        renderItem={renderStudent}
+        data={[...dummyStudents, { id: 'add' }]}
+        renderItem={({ item }) =>
+          item.id === 'add' ? renderAddProfile() : renderStudent({ item })
+        }
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        ListEmptyComponent={<Text style={styles.emptyText}>No students yet. Add one!</Text>}
+        numColumns={2}
+        contentContainerStyle={styles.grid}
+        columnWrapperStyle={styles.columnWrapper}
       />
-
-      <Pressable
-        style={styles.addButton}
-        onPress={() => navigation.navigate('TeacherAddStudent')}
-      >
-        <Icon name="plus" size={32} color="#fff" />
-        <Text style={styles.addText}>Add New Student</Text>
-      </Pressable>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f6f8f8' },
-  header: { padding: 24 },
-  title: { fontSize: 28, fontWeight: '800', color: '#120d1b' },
-  subtitle: { fontSize: 18, color: '#666', marginTop: 8 },
-  list: { paddingHorizontal: 20 },
-  studentCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 16,
-    marginBottom: 16,
-    elevation: 3,
+  container: {
+    flex: 1,
+    backgroundColor: '#F0F2F5',
   },
-  avatar: { width: 70, height: 70, borderRadius: 35 },
-  studentInfo: { flex: 1, marginLeft: 16 },
-  studentName: { fontSize: 20, fontWeight: '700' },
-  studentDetail: { fontSize: 15, color: '#666', marginTop: 4 },
-  emptyText: { textAlign: 'center', fontSize: 16, color: '#888', marginTop: 50 },
-  addButton: {
-    flexDirection: 'row',
+  header: {
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 30,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#000',
+    marginTop: 8,
+  },
+  grid: {
+    paddingHorizontal: 24,
+    paddingBottom: 30,
+  },
+  columnWrapper: {
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  profileCard: {
+    width: '47%',
+    backgroundColor: '#FFF',
+    borderRadius: 24,
+    padding: 20,
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  avatarContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#E8F0FE',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  avatar: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+  },
+  profileName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000',
+  },
+  addProfileCard: {
+    width: '47%',
+    backgroundColor: '#FFF',
+    borderRadius: 24,
+    borderWidth: 2,
+    borderColor: '#E0E0E0',
+    borderStyle: 'dashed',
+    padding: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#6c2bee',
-    margin: 20,
-    padding: 16,
-    borderRadius: 30,
-    elevation: 5,
   },
-  addText: { color: '#fff', fontSize: 18, fontWeight: '700', marginLeft: 12 },
+  addIconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  addProfileText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#A0A0A0',
+  },
 });
 
 export default TeacherDashboardScreen;

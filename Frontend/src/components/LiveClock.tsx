@@ -9,17 +9,20 @@ const LiveClock = () => {
     const updateDateTime = () => {
       const now = new Date();
 
-      // Day of the week (e.g., Monday)
-      const day = now.toLocaleDateString('en-US', { weekday: 'long' });
+      // Day of the week (e.g., MONDAY)
+      const day = now.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
       
-      // Time in 12-hour format with seconds and AM/PM (e.g., 9:00:05 AM)
+      // Month and date (e.g., OCTOBER 24)
+      const month = now.toLocaleDateString('en-US', { month: 'long' }).toUpperCase();
+      const date = now.getDate();
+      
+      // Time in 12-hour format with AM/PM (e.g., 9:00 AM)
       const time = now.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
-        // second: '2-digit',  // Remove this line if you don't want seconds
       });
 
-      setCurrentDateTime(`${day} • ${time}`);
+      setCurrentDateTime(`${day}, ${month} ${date} • ${time}`);
     };
 
     updateDateTime(); // Initial call
@@ -28,7 +31,7 @@ const LiveClock = () => {
     const interval = setInterval(updateDateTime, 1000);
 
     // Cleanup interval when component unmounts
-    return () => clearInterval(interval); // Cleanup
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -43,9 +46,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dateText: {
-    fontSize: 14,
-    color: '#6c2bee',
-    marginBottom: 6,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#7C4DFF',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
 });
 

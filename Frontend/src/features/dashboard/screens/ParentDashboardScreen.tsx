@@ -6,9 +6,9 @@ import {
   FlatList,
   Pressable,
   Image,
-  SafeAreaView,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAuth } from '../../auth/context/AuthContext';
 
@@ -47,7 +47,7 @@ const ParentDashboardScreen = ({ navigation }: any) => {
       <View style={styles.header}>
         <Text style={styles.title}>My Children</Text>
         <Pressable onPress={showProfile}>
-          <Icon name="account-circle" size={44} color="#6c2bee" />
+          <Icon name="account-circle" size={44} color="#1B337F" />
         </Pressable>
       </View>
 
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#6c2bee',
+    backgroundColor: '#1B337F',
     margin: 20,
     padding: 16,
     borderRadius: 30,

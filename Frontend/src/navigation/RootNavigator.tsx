@@ -130,6 +130,12 @@ import { QuizScreen } from '../features/activities/screens/QuizScreen';
 import { LetterGridScreen } from '../features/tracing/screens/LetterGridScreen';
 import { TracingScreen } from '../features/tracing/screens/TracingScreen';
 
+// Assessment Quiz screens
+import { HomeScreen as AssessmentQuizHomeScreen } from '../features/quiz/screens/HomeScreen';
+import { QuizScreen as AssessmentQuizScreen } from '../features/quiz/screens/QuizScreen';
+import { ResultScreen as AssessmentResultScreen } from '../features/quiz/screens/ResultScreen';
+import type { ResultCategory, QuizScores } from '../features/quiz/types/quiz_types';
+
 export type RootStackParamList = {
   Splash: undefined;
   Landing: undefined;
@@ -142,7 +148,9 @@ export type RootStackParamList = {
   ParentAddChild: undefined;
   TeacherAddStudent: undefined;
   ActivityHub: undefined;
-  Quiz: { newStudentId?: string };
+  AssessmentQuizHome: undefined;
+  AssessmentQuiz: undefined;
+  AssessmentResult: { category: ResultCategory; scores: QuizScores };
   LetterGrid: undefined;
   Tracing: { letter: string };
 };
@@ -151,13 +159,13 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const SplashScreenWrapper = ({ navigation }: any) => {
   return (
-    <VideoSplashScreen 
+    <VideoSplashScreen
       onVideoEnd={() => {
         navigation.reset({
           index: 0,
           routes: [{ name: 'Landing' }],
         });
-      }} 
+      }}
     />
   );
 };
@@ -174,97 +182,115 @@ const AppNavigator = () => {
         headerTitleStyle: { fontWeight: 'bold' },
       }}
     >
-          {user && user.email ? (
-            // Fully authenticated user with email → go to role-specific dashboard
+      {user && user.email ? (
+        // Fully authenticated user with email → go to role-specific dashboard
+        <>
+          {user.role === 'parent' ? (
             <>
-              {user.role === 'parent' ? (
-                <>
-                  <Stack.Screen
-                    name="ParentDashboard"
-                    component={ParentDashboardScreen}
-                    options={{ headerShown: false }}
-                  />
-                  <Stack.Screen
-                    name="ParentAddChild"
-                    component={ParentAddChildScreen}
-                  />
-                </>
-              ) : (
-                <>
-                  <Stack.Screen
-                    name="TeacherDashboard"
-                    component={TeacherDashboardScreen}
-                    options={{ headerShown: false }}
-                  />
-                  <Stack.Screen
-                    name="TeacherAddStudent"
-                    component={TeacherAddStudentScreen}
-                  />
-                </>
-              )}
-
-              {/* Shared activity screens */}
               <Stack.Screen
-                name="ActivityHub"
-                component={ActivityHubScreen}
-                options={{ title: 'Activities' }}
+                name="ParentDashboard"
+                component={ParentDashboardScreen}
+                options={{ headerShown: false }}
               />
               <Stack.Screen
-                name="Quiz"
-                component={QuizScreen}
-                options={{ title: 'Assessment Quiz' }}
-              />
-              <Stack.Screen
-                name="LetterGrid"
-                component={LetterGridScreen}
-                options={{ title: 'Select Letter' }}
-              />
-              <Stack.Screen
-                name="Tracing"
-                component={TracingScreen}
-                options={{ title: 'Trace Letter' }}
+                name="ParentAddChild"
+                component={ParentAddChildScreen}
               />
             </>
           ) : (
-            // Not authenticated → auth flow
             <>
               <Stack.Screen
-                name="Splash"
-                component={SplashScreenWrapper}
+                name="TeacherDashboard"
+                component={TeacherDashboardScreen}
                 options={{ headerShown: false }}
               />
               <Stack.Screen
-                name="Landing"
-                component={HomeScreen}
-                options={{ headerShown: false }}
-              />
-
-              {/* Parent flow */}
-              <Stack.Screen
-                name="ParentLogin"
-                component={ParentLoginScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="ParentSignup"
-                component={ParentSignupScreen}
-                options={{ headerShown: false }}
-              />
-
-              {/* Teacher flow */}
-              <Stack.Screen
-                name="TeacherLogin"
-                component={TeacherLoginScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="TeacherSignup"
-                component={TeacherSignupScreen}
-                options={{ headerShown: false }}
+                name="TeacherAddStudent"
+                component={TeacherAddStudentScreen}
               />
             </>
           )}
-        </Stack.Navigator>
+
+          {/* Shared activity screens */}
+          <Stack.Screen
+            name="ActivityHub"
+            component={ActivityHubScreen}
+            options={{ title: 'Activities' }}
+          />
+          <Stack.Screen
+            name="LetterGrid"
+            component={LetterGridScreen}
+            options={{ title: 'Select Letter' }}
+          />
+          <Stack.Screen
+            name="Tracing"
+            component={TracingScreen}
+            options={{ title: 'Trace Letter' }}
+          />
+
+          {/* Assessment Quiz Screens */}
+          <Stack.Screen
+            name="AssessmentQuizHome"
+            component={AssessmentQuizHomeScreen}
+            options={{
+              title: 'Disorder Assessment',
+              headerShown: true
+            }}
+          />
+          <Stack.Screen
+            name="AssessmentQuiz"
+            component={AssessmentQuizScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AssessmentResult"
+            component={AssessmentResultScreen}
+            options={{
+              title: 'Assessment Result',
+              headerShown: false
+            }}
+          />
+        </>
+      ) : (
+        // Not authenticated → auth flow
+        <>
+          <Stack.Screen
+            name="Splash"
+            component={SplashScreenWrapper}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Landing"
+            component={HomeScreen}
+            options={{ headerShown: false }}
+          />
+
+          {/* Parent flow */}
+          <Stack.Screen
+            name="ParentLogin"
+            component={ParentLoginScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ParentSignup"
+            component={ParentSignupScreen}
+            options={{ headerShown: false }}
+          />
+
+          {/* Teacher flow */}
+          <Stack.Screen
+            name="TeacherLogin"
+            component={TeacherLoginScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="TeacherSignup"
+            component={TeacherSignupScreen}
+            options={{ headerShown: false }}
+          />
+        </>
+      )}
+    </Stack.Navigator>
   );
 };
 

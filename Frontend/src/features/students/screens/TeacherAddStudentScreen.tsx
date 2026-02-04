@@ -26,10 +26,25 @@ const TeacherAddStudentScreen = ({ navigation }: any) => {
       Alert.alert('Error', 'Please fill required fields');
       return;
     }
-    // Dummy success — later save to context/database
-    Alert.alert('Success 🎉', `${name} added successfully!`);
-    navigation.replace('ActivityHub');
-  };
+
+    // Show success and ask about quiz
+    Alert.alert(
+      'Success 🎉',
+      `${name} added successfully!\n\nWould you like to take a disorder assessment quiz?`,
+      [
+        {
+          text: 'Take Assessment Quiz',
+          onPress: () => navigation.navigate('AssessmentQuizHome'),
+        },
+        {
+          text: 'Skip to Activities',
+          onPress: () => navigation.replace('ActivityHub'),
+          style: 'cancel',
+        },
+      ],
+      { cancelable: false }
+    );
+  }
 
   const pickAvatar = () => {
     // TODO: Use expo-image-picker or react-native-image-picker
@@ -41,61 +56,61 @@ const TeacherAddStudentScreen = ({ navigation }: any) => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f6f8f8' }}>
       <ScrollView style={styles.container}>
-      <Text style={styles.title}>Add New Student</Text>
+        <Text style={styles.title}>Add New Student</Text>
 
-      <Pressable style={styles.avatarContainer} onPress={pickAvatar}>
-        {avatar ? (
-          <Image source={{ uri: avatar }} style={styles.avatar} />
-        ) : (
-          <Icon name="camera-plus" size={50} color="#888" />
-        )}
-        <Text style={styles.avatarText}>Tap to add photo</Text>
-      </Pressable>
+        <Pressable style={styles.avatarContainer} onPress={pickAvatar}>
+          {avatar ? (
+            <Image source={{ uri: avatar }} style={styles.avatar} />
+          ) : (
+            <Icon name="camera-plus" size={50} color="#888" />
+          )}
+          <Text style={styles.avatarText}>Tap to add photo</Text>
+        </Pressable>
 
-      <TextInput
-        placeholder="Student Name *"
-        value={name}
-        onChangeText={setName}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Age *"
-        value={age}
-        onChangeText={setAge}
-        keyboardType="numeric"
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Disorder Type *"
-        value={disorder}
-        onChangeText={setDisorder}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Password *"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Parents Contact No"
-        value={contact}
-        onChangeText={setContact}
-        keyboardType="phone-pad"
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Parents Address"
-        value={address}
-        onChangeText={setAddress}
-        style={styles.input}
-        multiline
-      />
+        <TextInput
+          placeholder="Student Name *"
+          value={name}
+          onChangeText={setName}
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Age *"
+          value={age}
+          onChangeText={setAge}
+          keyboardType="numeric"
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Disorder Type *"
+          value={disorder}
+          onChangeText={setDisorder}
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Password *"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Parents Contact No"
+          value={contact}
+          onChangeText={setContact}
+          keyboardType="phone-pad"
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Parents Address"
+          value={address}
+          onChangeText={setAddress}
+          style={styles.input}
+          multiline
+        />
 
-      <Pressable style={styles.submitButton} onPress={handleAdd}>
-        <Text style={styles.submitText}>Create Student</Text>
-      </Pressable>
+        <Pressable style={styles.submitButton} onPress={handleAdd}>
+          <Text style={styles.submitText}>Create Student</Text>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );

@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const ParentAddChildScreen = ({ navigation }:any) => {
+const ParentAddChildScreen = ({ navigation }: any) => {
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState(null);
 
@@ -20,8 +20,24 @@ const ParentAddChildScreen = ({ navigation }:any) => {
       Alert.alert('Error', 'Please enter child name');
       return;
     }
-    Alert.alert('Success 🎉', `${name} added!`);
-    navigation.replace('ActivityHub');
+
+    // Show success and ask about quiz
+    Alert.alert(
+      'Success 🎉',
+      `${name} added successfully!\n\nNot sure about disease/disorder?`,
+      [
+        {
+          text: 'Take Assessment Quiz',
+          onPress: () => navigation.navigate('AssessmentQuizHome'),
+        },
+        {
+          text: 'Skip to Activities',
+          onPress: () => navigation.replace('ActivityHub'),
+          style: 'cancel',
+        },
+      ],
+      { cancelable: false }
+    );
   };
 
   const pickAvatar = () => {

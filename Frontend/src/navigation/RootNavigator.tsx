@@ -112,9 +112,8 @@ import { AuthProvider } from '../features/auth/context/AuthContext';
 import { HomeScreen } from '../features/dashboard/screens/HomeScreen';
 import VideoSplashScreen from '../features/splash/screens/VideoSplashScreen';
 import { TeacherLoginScreen } from '../features/auth/screens/TeacherLoginScreen';
-import { ParentLoginScreen } from '../features/auth/screens/ParentLoginScreen';
+import { ParentAuthScreen } from '../features/auth/screens/ParentAuthScreen';
 import { TeacherSignupScreen } from '../features/auth/screens/TeacherSignupScreen';
-import { ParentSignupScreen } from '../features/auth/screens/ParentSignupScreen';
 
 // New dashboard screens
 import TeacherDashboardScreen from '../features/dashboard/screens/TeacherDashboardScreen';
@@ -139,8 +138,7 @@ import type { ResultCategory, QuizScores } from '../features/quiz/types/quiz_typ
 export type RootStackParamList = {
   Splash: undefined;
   Landing: undefined;
-  ParentLogin: undefined;
-  ParentSignup: undefined;
+  ParentAuth: undefined;
   TeacherLogin: undefined;
   TeacherSignup: undefined;
   ParentDashboard: undefined;
@@ -267,13 +265,8 @@ const AppNavigator = () => {
 
           {/* Parent flow */}
           <Stack.Screen
-            name="ParentLogin"
-            component={ParentLoginScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="ParentSignup"
-            component={ParentSignupScreen}
+            name="ParentAuth"
+            component={ParentAuthScreen}
             options={{ headerShown: false }}
           />
 

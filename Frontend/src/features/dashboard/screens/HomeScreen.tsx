@@ -40,7 +40,7 @@ export const HomeScreen = ({ navigation }: any) => {
 
   const enterAsParent = () => {
     setSelectedRole('parent');
-    navigation.navigate('ParentSignup');
+    navigation.navigate('ParentAuth');
   };
 
   const enterAsTeacher = () => {
@@ -68,33 +68,33 @@ export const HomeScreen = ({ navigation }: any) => {
       <Text style={styles.subHeading}>Choose where you are today</Text>
 
       {/* Carousel */}
-    <View style={styles.middleSection} >
-  <FlatList
-    data={cards}
-    renderItem={renderCard}
-    keyExtractor={(item) => item.id}
-    horizontal
-    showsHorizontalScrollIndicator={false}
-    snapToInterval={260}
-    decelerationRate="fast"
-    contentContainerStyle={{ paddingHorizontal: 5 }}
-  />
+      <View style={styles.middleSection} >
+        <FlatList
+          data={cards}
+          renderItem={renderCard}
+          keyExtractor={(item) => item.id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          snapToInterval={260}
+          decelerationRate="fast"
+          contentContainerStyle={{ paddingHorizontal: 5 }}
+        />
 
-  <View style={styles.choiceContainer}>
-    <TouchableOpacity style={styles.choiceCard} onPress={enterAsParent}>
-       <Icon name="home-variant" size={32} color="#1B337F" />
-      <Text style={styles.choiceText}>At Home</Text>
-    </TouchableOpacity>
+        <View style={styles.choiceContainer}>
+          <TouchableOpacity style={styles.choiceCard} onPress={enterAsParent}>
+            <Icon name="home-variant" size={32} color="#1B337F" />
+            <Text style={styles.choiceText}>At Home</Text>
+          </TouchableOpacity>
 
-    <TouchableOpacity
-      style={[styles.choiceCard, { marginTop: 20 }]}
-      onPress={enterAsTeacher}
-    >
-       <Icon name="school" size={32} color="#1B337F" />
-      <Text style={styles.choiceText}>At School</Text>
-    </TouchableOpacity>
-  </View>
-</View>
+          <TouchableOpacity
+            style={[styles.choiceCard, { marginTop: 20 }]}
+            onPress={enterAsTeacher}
+          >
+            <Icon name="school" size={32} color="#1B337F" />
+            <Text style={styles.choiceText}>At School</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
 
 
     </SafeAreaView>
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     elevation: 4,
   },
- 
+
 
   cardImage: {
     width: '100%',
@@ -193,31 +193,31 @@ const styles = StyleSheet.create({
     color: '#120d1b',
   },
   choiceContainer: {
-  alignItems: 'center',
-  marginTop: 30,
-},
+    alignItems: 'center',
+    marginTop: 30,
+  },
 
-choiceCard: {
-  width: '80%',
-  backgroundColor: '#FFFFFF',
-  borderRadius: 20,
-  paddingVertical: 18,
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: 12,
-  elevation: 4,
-},
+  choiceCard: {
+    width: '80%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    paddingVertical: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    elevation: 4,
+  },
 
-choiceText: {
-  fontSize: 18,
-  fontWeight: '700',
-  color: '#120d1b',
-},
+  choiceText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#120d1b',
+  },
 
-iconText: {
-  fontSize: 32,
-  marginBottom: 8,
-},
+  iconText: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
 
 });

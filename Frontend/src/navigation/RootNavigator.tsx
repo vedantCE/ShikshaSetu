@@ -111,9 +111,8 @@ import { AuthProvider } from '../features/auth/context/AuthContext';
 // Existing screens
 import { HomeScreen } from '../features/dashboard/screens/HomeScreen';
 import VideoSplashScreen from '../features/splash/screens/VideoSplashScreen';
-import { TeacherLoginScreen } from '../features/auth/screens/TeacherLoginScreen';
+import { TeacherAuthScreen } from '../features/auth/screens/TeacherAuthScreen';
 import { ParentAuthScreen } from '../features/auth/screens/ParentAuthScreen';
-import { TeacherSignupScreen } from '../features/auth/screens/TeacherSignupScreen';
 
 // New dashboard screens
 import TeacherDashboardScreen from '../features/dashboard/screens/TeacherDashboardScreen';
@@ -128,7 +127,8 @@ import { ActivityHubScreen } from '../features/activities/screens/ActivityHubScr
 import { QuizScreen } from '../features/activities/screens/QuizScreen';
 import { LetterGridScreen } from '../features/tracing/screens/LetterGridScreen';
 import { TracingScreen } from '../features/tracing/screens/TracingScreen';
-
+import { NumberGridScreen } from '../features/tracing/screens/NumberGridScreen';
+import { ShapeGridScreen } from '../features/tracing/screens/ShapeGridScreen';
 // Assessment Quiz screens
 import { HomeScreen as AssessmentQuizHomeScreen } from '../features/quiz/screens/HomeScreen';
 import { QuizScreen as AssessmentQuizScreen } from '../features/quiz/screens/QuizScreen';
@@ -139,8 +139,7 @@ export type RootStackParamList = {
   Splash: undefined;
   Landing: undefined;
   ParentAuth: undefined;
-  TeacherLogin: undefined;
-  TeacherSignup: undefined;
+  TeacherAuth: undefined;
   ParentDashboard: undefined;
   TeacherDashboard: undefined;
   ParentAddChild: undefined;
@@ -150,7 +149,9 @@ export type RootStackParamList = {
   AssessmentQuiz: undefined;
   AssessmentResult: { category: ResultCategory; scores: QuizScores };
   LetterGrid: undefined;
-  Tracing: { letter: string };
+  NumberGrid: undefined;
+  ShapeGrid: undefined;
+  Tracing: { letter: string } | { category: string; item: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -225,7 +226,16 @@ const AppNavigator = () => {
             component={TracingScreen}
             options={{ title: 'Trace Letter' }}
           />
-
+          <Stack.Screen
+            name="NumberGrid"
+            component={NumberGridScreen}
+            options={{ title: 'Select Number' }}
+          />
+          <Stack.Screen
+            name="ShapeGrid"
+            component={ShapeGridScreen}
+            options={{ title: 'Select Shape' }}
+          />
           {/* Assessment Quiz Screens */}
           <Stack.Screen
             name="AssessmentQuizHome"
@@ -272,15 +282,11 @@ const AppNavigator = () => {
 
           {/* Teacher flow */}
           <Stack.Screen
-            name="TeacherLogin"
-            component={TeacherLoginScreen}
+            name="TeacherAuth"
+            component={TeacherAuthScreen}
             options={{ headerShown: false }}
           />
-          <Stack.Screen
-            name="TeacherSignup"
-            component={TeacherSignupScreen}
-            options={{ headerShown: false }}
-          />
+
         </>
       )}
     </Stack.Navigator>

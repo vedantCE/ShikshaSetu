@@ -1,0 +1,1 @@
+export const SHAPES = ['circle', 'square', 'triangle', 'rectangle', 'diamond']; // add more later

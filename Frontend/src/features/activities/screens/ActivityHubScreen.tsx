@@ -7,9 +7,10 @@ import {
   Pressable,
   ImageBackground,
   Dimensions,
+  ScrollView
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import  {SafeAreaView}  from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigation/RootNavigator';
@@ -21,7 +22,15 @@ type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'ActivityHub'>;
 };
 
-const foundational = [
+type ActivityItem = {
+  id: string;
+  title: string;
+  image: any;
+  screen: 'LetterGrid' | 'NumberGrid' | 'ShapeGrid' | null;
+  disabled: boolean;
+};
+
+const foundational: ActivityItem[] = [
   {
     id: '1',
     title: 'ABC & Letters',
@@ -33,19 +42,19 @@ const foundational = [
     id: '2',
     title: 'Numbers & Maths',
     image: require('../assets/Activityhub/number.jpg'),
-    screen: null,
-    disabled: true,
+    screen: 'NumberGrid' as const,
+    disabled: false,
   },
   {
     id: '3',
     title: 'Shapes & Lines',
     image: require('../assets/Activityhub/shapes.png'),
-    screen: null,
-    disabled: true,
+    screen: 'ShapeGrid' as const,
+    disabled: false,
   },
 ];
 
-const lifeSkills = [
+const lifeSkills: ActivityItem[] = [
   {
     id: '4',
     title: 'Stories & Feelings',
@@ -65,9 +74,13 @@ const lifeSkills = [
 export const ActivityHubScreen = ({ navigation }: Props) => {
   const { currentStudent } = useAuth();
 
-  const renderCard = ({ item }: { item: typeof foundational[0] }) => (
+  const renderCard = ({ item }: { item: ActivityItem }) => (
     <Pressable
-      onPress={() => item.screen && navigation.navigate(item.screen)}
+      onPress={() => {
+        if (item.screen && !item.disabled) {
+          navigation.navigate(item.screen as any);
+        }
+      }}
       disabled={item.disabled}
       style={({ pressed }) => [
         styles.card,
@@ -92,51 +105,60 @@ export const ActivityHubScreen = ({ navigation }: Props) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+    // Choose Activity ma uper ni side bov sapce aavti hati atle edges add kari safe area view ma 
+    <SafeAreaView edges={['left', 'right', 'bottom']} style={styles.container}>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 140 }}   // Space for bottom tab bar
+        showsVerticalScrollIndicator={false}            // Optional: cleaner look
+      >
+        {/* Header */}
+        {/* <View style={styles.header}>
         <Icon name="cog-outline" size={28} color="#666" />
         <Text style={styles.headerTitle}>Learn</Text>
         <View style={{ width: 28 }} />
-      </View>
+      </View> */}
 
-      {/* Main Title */}
-      <Text style={styles.mainTitle}>
-        Choose Activity {currentStudent ? `for ${currentStudent.name}` : ''}
-      </Text>
+        {/* Main Title */}
+        <Text style={styles.mainTitle}>
+          Choose Activity {currentStudent ? `for ${currentStudent.name}` : ''}
+        </Text>
 
-      {/* Foundational */}
-      <Text style={styles.sectionTitle}>Foundational</Text>
-      <Text style={styles.sectionSub}>
-        Academic basics through visual play
-      </Text>
+        {/* Foundational */}
+        <Text style={styles.sectionTitle}>Foundational</Text>
+        <Text style={styles.sectionSub}>
+          Academic basics through visual play
+        </Text>
 
-      <FlatList
-        data={foundational}
-        renderItem={renderCard}
-        keyExtractor={item => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.columnWrapper}
-        contentContainerStyle={styles.listContent}
-      />
+        <FlatList
+          data={foundational}
+          renderItem={renderCard}
+          keyExtractor={item => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={styles.listContent}
+          scrollEnabled={false}
+          bounces={false}                    //removes bounce
+        />
 
-      {/* Life Skills */}
-      <Text style={[styles.sectionTitle, { marginTop: 32 }]}>
-        Life Skills
-      </Text>
-      <Text style={styles.sectionSub}>
-        Connecting with the world around us
-      </Text>
+        {/* Life Skills */}
+        <Text style={[styles.sectionTitle, { marginTop: 32 }]}>
+          Life Skills
+        </Text>
+        <Text style={styles.sectionSub}>
+          Connecting with the world around us
+        </Text>
 
-      <FlatList
-        data={lifeSkills}
-        renderItem={renderCard}
-        keyExtractor={item => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.columnWrapper}
-        contentContainerStyle={[styles.listContent, { paddingBottom: 120 }]}
-      />
-
+        <FlatList
+          data={lifeSkills}
+          renderItem={renderCard}
+          keyExtractor={item => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={styles.listContent}
+          scrollEnabled={false}
+          bounces={false}                    //removes bounce
+        />
+      </ScrollView>
       {/* Bottom Tab Bar */}
       <View style={styles.bottomBar}>
         <Tab icon="home-outline" label="Home" />
@@ -174,7 +196,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 10,
   },
 
   headerTitle: {
@@ -188,7 +210,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     color: '#111618',
-    marginVertical: 20,
+    marginVertical: 12,
     paddingHorizontal: 20,
   },
 
@@ -203,8 +225,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#777',
     marginHorizontal: 20,
-    marginBottom: 16,
-    marginTop: 4,
+    marginBottom: 10,
+    marginTop: 2,
   },
 
   listContent: {

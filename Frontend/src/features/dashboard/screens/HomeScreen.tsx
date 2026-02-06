@@ -45,7 +45,7 @@ export const HomeScreen = ({ navigation }: any) => {
 
   const enterAsTeacher = () => {
     setSelectedRole('teacher');
-    navigation.navigate('TeacherSignup');
+    navigation.navigate('TeacherAuth');
   };
 
   const renderCard = ({ item }: any) => (

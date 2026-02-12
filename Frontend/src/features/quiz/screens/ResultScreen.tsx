@@ -2,7 +2,7 @@
  * Result Screen - Supportive, non-judgmental results display
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
     View,
     Text,
@@ -19,6 +19,8 @@ import {
     getResultExplanation,
     getScoreLevel,
 } from '../utils/scoringLogic';
+import { useAuth } from '../../auth/context/AuthContext';
+import { submitChildQuizResult } from '../../auth/services/studentApi';
 import {
     COLORS,
     TYPOGRAPHY,
@@ -89,8 +91,37 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
     navigation,
     route,
 }) => {
+    const { user, currentStudent, setStudents } = useAuth();
     const params = route.params || {};
     const { category, scores } = params;
+
+    useEffect(() => {
+        const syncQuizResult = async () => {
+            if (!user?.token || user.role !== 'parent' || !currentStudent || !scores) {
+                return;
+            }
+
+            try {
+                const updated = await submitChildQuizResult(user.token, currentStudent.id, {
+                    ADHD: scores.ADHD,
+                    AUTISM: scores.AUTISM,
+                    ID: scores.ID,
+                });
+
+                setStudents((prev) =>
+                    prev.map((student) =>
+                        student.id === String(updated.student_id)
+                            ? { ...student, disorder: updated.disorder_type }
+                            : student
+                    )
+                );
+            } catch (error) {
+                console.error('Failed to submit quiz result:', error);
+            }
+        };
+
+        syncQuizResult();
+    }, [user, currentStudent, scores, setStudents]);
 
     const handleRetakeQuiz = () => {
         navigation.navigate('AssessmentQuizHome');

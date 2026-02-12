@@ -3,9 +3,11 @@ import { ImageSourcePropType } from 'react-native';
 
 type Role = 'parent' | 'teacher';
 type AuthenticatedUser = {
+  user_id: number;
   role: Role;
   email: string;
   name?: string;
+  token: string;
 };
 
 type Student = {
@@ -26,10 +28,17 @@ type AuthContextType = {
   currentStudent: Student | null;
   students: Student[];
   setSelectedRole: (role: Role | null) => void;
-  login: (email: string, name?: string) => void;
+  login: (payload: {
+    user_id: number;
+    role: Role;
+    email: string;
+    token: string;
+    name?: string;
+  }) => void;
   logout: () => void;
   selectStudent: (id: string) => void;
   addStudent: (student: Student) => void;
+  setStudents: (students: Student[] | ((prev: Student[]) => Student[])) => void;
   updateParentInfo: (name: string, email: string) => void;
 };
 
@@ -43,26 +52,30 @@ const AuthContext = createContext<AuthContextType>({
   logout: () => {},
   selectStudent: () => {},
   addStudent: () => {},
+  setStudents: () => {},
   updateParentInfo: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
-  const [students, setStudents] = useState<Student[]>([]);
+  const [students, setStudentsState] = useState<Student[]>([]);
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
 
-  const login = (email: string, name?: string) => {
-    if (!selectedRole) {
-      throw new Error('Cannot login without selecting a role first');
-    }
-    setUser({ role: selectedRole, email, name });
+  const login = ({ user_id, role, email, token, name }: {
+    user_id: number;
+    role: Role;
+    email: string;
+    token: string;
+    name?: string;
+  }) => {
+    setUser({ user_id, role, email, token, name });
   };
 
   const logout = () => {
     setUser(null);
     setSelectedRole(null);
-    setStudents([]);
+    setStudentsState([]);
     setCurrentStudent(null);
   };
 
@@ -72,7 +85,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const addStudent = (student: Student) => {
-    setStudents(prev => [...prev, student]);
+    setStudentsState(prev => [...prev, student]);
+  };
+
+  const replaceStudents = (incomingStudents: Student[] | ((prev: Student[]) => Student[])) => {
+    setStudentsState((prev) => {
+      const next =
+        typeof incomingStudents === 'function'
+          ? incomingStudents(prev)
+          : incomingStudents;
+
+      if (next.length === 0) {
+        setCurrentStudent(null);
+      } else if (currentStudent && !next.find((student) => student.id === currentStudent.id)) {
+        setCurrentStudent(null);
+      }
+
+      return next;
+    });
   };
 
   const updateParentInfo = (name: string, email: string) => {
@@ -92,6 +122,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       logout, 
       selectStudent, 
       addStudent, 
+      setStudents: replaceStudents,
       updateParentInfo 
     }}>
       {children}

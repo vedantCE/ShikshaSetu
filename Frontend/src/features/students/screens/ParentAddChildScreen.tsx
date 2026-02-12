@@ -10,34 +10,71 @@ import {
   ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useAuth } from '../../auth/context/AuthContext';
+import { createChild } from '../../auth/services/studentApi';
 
 const ParentAddChildScreen = ({ navigation }: any) => {
+  const { user, addStudent, selectStudent } = useAuth();
   const [name, setName] = useState('');
+  const [age, setAge] = useState('');
+  const [password, setPassword] = useState('');
   const [avatar, setAvatar] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleAdd = () => {
-    if (!name) {
-      Alert.alert('Error', 'Please enter child name');
+  const handleAdd = async () => {
+    if (!name || !age || !password) {
+      Alert.alert('Error', 'Please enter name, age and password');
       return;
     }
 
-    // Show success and ask about quiz
-    Alert.alert(
-      'Success 🎉',
-      `${name} added successfully!\n\nNot sure about disease/disorder?`,
-      [
-        {
-          text: 'Take Assessment Quiz',
-          onPress: () => navigation.navigate('AssessmentQuizHome'),
-        },
-        {
-          text: 'Skip to Activities',
-          onPress: () => navigation.replace('ActivityHub'),
-          style: 'cancel',
-        },
-      ],
-      { cancelable: false }
-    );
+    if (!user?.token) {
+      Alert.alert('Error', 'Please log in again');
+      return;
+    }
+
+    const parsedAge = Number(age);
+    if (Number.isNaN(parsedAge) || parsedAge <= 0) {
+      Alert.alert('Error', 'Please enter a valid age');
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      const child = await createChild(user.token, {
+        student_name: name,
+        age: parsedAge,
+        password,
+      });
+
+      addStudent({
+        id: String(child.student_id),
+        name: child.student_name,
+        age: child.age,
+        disorder: child.disorder_type,
+      });
+      selectStudent(String(child.student_id));
+
+      Alert.alert(
+        'Success',
+        `${child.student_name} added successfully.\n\nTake disorder assessment now?`,
+        [
+          {
+            text: 'Take Assessment Quiz',
+            onPress: () => navigation.navigate('AssessmentQuizHome'),
+          },
+          {
+            text: 'Skip to Activities',
+            onPress: () => navigation.replace('ActivityHub'),
+            style: 'cancel',
+          },
+        ],
+        { cancelable: false }
+      );
+    } catch (error: any) {
+      Alert.alert('Error', error?.message || 'Failed to add child');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const pickAvatar = () => {
@@ -59,9 +96,23 @@ const ParentAddChildScreen = ({ navigation }: any) => {
       </Pressable>
 
       <TextInput placeholder="Child Name *" value={name} onChangeText={setName} style={styles.input} />
+      <TextInput
+        placeholder="Age *"
+        value={age}
+        onChangeText={setAge}
+        keyboardType="numeric"
+        style={styles.input}
+      />
+      <TextInput
+        placeholder="Child Password *"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        style={styles.input}
+      />
 
-      <Pressable style={styles.submitButton} onPress={handleAdd}>
-        <Text style={styles.submitText}>Create & Start Learning</Text>
+      <Pressable style={styles.submitButton} onPress={handleAdd} disabled={isSaving}>
+        <Text style={styles.submitText}>{isSaving ? 'Creating...' : 'Create & Start Learning'}</Text>
       </Pressable>
     </ScrollView>
   );

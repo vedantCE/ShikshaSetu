@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, Alert, ActivityIndicator } from 'react-native';
+import { Alert } from 'react-native';
 import { useAuth } from '../../auth/context/AuthContext'; // adjust path if needed
 import { AuthLayout } from '../components/AuthLayout';
 import { CustomInput } from '../components/CustomInput';
 import { PencilLoader } from '../components/PencilLoader';
+import { loginUser, registerUser } from '../services/authApi';
+import { fetchChildren } from '../services/studentApi';
 export const ParentAuthScreen = ({ navigation }: any) => {
-  const { login } = useAuth();
+  const { login, setStudents } = useAuth();
 
   // Form state
   const [isSignup, setIsSignup] = useState(false);
@@ -40,23 +42,58 @@ export const ParentAuthScreen = ({ navigation }: any) => {
     }
 
     setLoading(true);
-    // Simulate async work (replace with real API call later)
-    setTimeout(() => {
+    try {
       if (isSignup) {
-        login(email, 'New Parent');
-        Alert.alert('Success 🎉', 'Parent account created!');
+        const fallbackName = email.split('@')[0] || 'Parent';
+        const response = await registerUser({
+          user_name: fallbackName,
+          user_email: email,
+          user_password: password,
+          confirm_password: confirmPassword,
+          contact_number: contactNumber,
+          address,
+          user_role: 'parent',
+        });
+
+        login({
+          user_id: response.user_id,
+          role: response.user_role,
+          email,
+          token: response.token,
+          name: response.user_name,
+        });
+        setStudents([]);
+        Alert.alert('Success', 'Parent account created!');
         navigation.replace('ParentDashboard');
       } else {
-        // Dummy check – replace with real auth
-        if (email === 'parent@example.com' && password === 'parent123') {
-          login(email);
-          navigation.replace('ParentDashboard');
-        } else {
-          Alert.alert('Invalid Credentials', 'Use parent@example.com / parent123');
-        }
+        const response = await loginUser({
+          user_email: email,
+          user_password: password,
+        });
+
+        login({
+          user_id: response.user_id,
+          role: response.user_role,
+          email,
+          token: response.token,
+          name: response.user_name,
+        });
+        const children = await fetchChildren(response.token);
+        setStudents(
+          children.map((child) => ({
+            id: String(child.student_id),
+            name: child.student_name,
+            age: child.age,
+            disorder: child.disorder_type,
+          }))
+        );
+        navigation.replace('ParentDashboard');
       }
+    } catch (error: any) {
+      Alert.alert('Auth Error', error?.message || 'Request failed');
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const handleTabChange = (tab: 'login' | 'signup') => {

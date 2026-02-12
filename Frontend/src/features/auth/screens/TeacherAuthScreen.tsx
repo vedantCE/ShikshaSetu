@@ -5,6 +5,7 @@ import { AuthLayout } from '../components/AuthLayout';
 import { CustomInput } from '../components/CustomInput';
 import { PencilLoader } from '../components/PencilLoader'; // your loader
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { loginUser, registerUser } from '../services/authApi';
 
 export const TeacherAuthScreen = ({ navigation }: any) => {
   const { login } = useAuth();
@@ -23,7 +24,7 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
   // Loading state (for smooth UX with your pencil loader)
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (isSignup) {
       // Signup validation
       if (!email || !password || !confirmPassword || !address || !contactNumber) {
@@ -34,29 +35,56 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
         Alert.alert('Error', 'Passwords do not match');
         return;
       }
-      setLoading(true);
-      setTimeout(() => {
-        login(email, 'New Teacher');
-        Alert.alert('Success 🎉', 'Teacher account created!');
-        navigation.replace('TeacherDashboard'); // adjust to your dashboard
-        setLoading(false);
-      }, 1000);
     } else {
-      // Login validation + dummy check
+      // Login validation
       if (!email || !password) {
         Alert.alert('Error', 'Please enter email and password');
         return;
       }
-      setLoading(true);
-      setTimeout(() => {
-        if (email === 'teacher@example.com' && password === 'password') {
-          login(email);
-          navigation.replace('TeacherDashboard'); // adjust
-        } else {
-          Alert.alert('Invalid Credentials', 'Use teacher@example.com / password');
-        }
-        setLoading(false);
-      }, 1000);
+    }
+
+    setLoading(true);
+    try {
+      if (isSignup) {
+        const fallbackName = email.split('@')[0] || 'Teacher';
+        const response = await registerUser({
+          user_name: fallbackName,
+          user_email: email,
+          user_password: password,
+          confirm_password: confirmPassword,
+          contact_number: contactNumber,
+          address,
+          user_role: 'teacher',
+        });
+
+        login({
+          user_id: response.user_id,
+          role: response.user_role,
+          email,
+          token: response.token,
+          name: response.user_name,
+        });
+        Alert.alert('Success', 'Teacher account created!');
+        navigation.replace('TeacherDashboard');
+      } else {
+        const response = await loginUser({
+          user_email: email,
+          user_password: password,
+        });
+
+        login({
+          user_id: response.user_id,
+          role: response.user_role,
+          email,
+          token: response.token,
+          name: response.user_name,
+        });
+        navigation.replace('TeacherDashboard');
+      }
+    } catch (error: any) {
+      Alert.alert('Auth Error', error?.message || 'Request failed');
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -12,17 +12,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAuth } from '../../auth/context/AuthContext';
 
-const dummyChildren = [
-  {
-    id: '1',
-    name: 'My Child Aarav',
-    avatar: require('../assets/Homescreen/puzzleGame.png'),
-  },
-  // Add more
-];
-
 const ParentDashboardScreen = ({ navigation }: any) => {
-  const { user } = useAuth();
+  const { user, students, selectStudent } = useAuth();
 
   const showProfile = () => {
     Alert.alert(
@@ -34,9 +25,18 @@ const ParentDashboardScreen = ({ navigation }: any) => {
   const renderChild = ({ item }: any) => (
     <Pressable
       style={styles.childCard}
-      onPress={() => navigation.navigate('ActivityHub')}
+      onPress={() => {
+        selectStudent(item.id);
+        navigation.navigate('ActivityHub');
+      }}
     >
-      <Image source={item.avatar} style={styles.avatar} />
+      {item.avatar ? (
+        <Image source={item.avatar} style={styles.avatar} />
+      ) : (
+        <View style={[styles.avatar, styles.avatarFallback]}>
+          <Icon name="account-child" size={36} color="#1B337F" />
+        </View>
+      )}
       <Text style={styles.childName}>{item.name}</Text>
       <Icon name="chevron-right" size={28} color="#888" />
     </Pressable>
@@ -52,7 +52,7 @@ const ParentDashboardScreen = ({ navigation }: any) => {
       </View>
 
       <FlatList
-        data={dummyChildren}
+        data={students}
         renderItem={renderChild}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
@@ -85,6 +85,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   avatar: { width: 70, height: 70, borderRadius: 35 },
+  avatarFallback: { backgroundColor: '#E8F0FE', alignItems: 'center', justifyContent: 'center' },
   childName: { flex: 1, marginLeft: 20, fontSize: 20, fontWeight: '700' },
   emptyText: { textAlign: 'center', fontSize: 16, color: '#888', marginTop: 50 },
   addButton: {

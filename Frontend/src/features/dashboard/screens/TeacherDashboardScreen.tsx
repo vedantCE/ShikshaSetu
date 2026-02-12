@@ -12,42 +12,23 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAuth } from '../../auth/context/AuthContext';
 import LiveClock from '../../../components/LiveClock';
 
-const dummyStudents = [
-  {
-    id: '1',
-    name: 'Aarav',
-    age: 8,
-    disorder: 'Autism Spectrum',
-    avatar: require('../assets/Homescreen/puzzleGame.png'),
-  },
-  {
-    id: '2',
-    name: 'Priya',
-    age: 7,
-    disorder: 'ADHD',
-    avatar: require('../assets/Homescreen/puzzleGame.png'),
-  },
-  {
-    id: '3',
-    name: 'Rohan',
-    age: 9,
-    disorder: 'ID',
-    avatar: require('../assets/Homescreen/coLlearning.png'),
-  },
-];
-
 const TeacherDashboardScreen = ({ navigation }:any) => {
-  const { user } = useAuth();
+  const { students, selectStudent } = useAuth();
 
   const renderStudent = ({ item }:any) => (
     <Pressable
       style={styles.profileCard}
       onPress={() => {
+        selectStudent(item.id);
         navigation.navigate('ActivityHub');
       }}
     >
       <View style={styles.avatarContainer}>
-        <Image source={item.avatar} style={styles.avatar} />
+        {item.avatar ? (
+          <Image source={item.avatar} style={styles.avatar} />
+        ) : (
+          <Icon name="account-child" size={44} color="#1B337F" />
+        )}
       </View>
       <Text style={styles.profileName}>{item.name}</Text>
     </Pressable>
@@ -73,7 +54,7 @@ const TeacherDashboardScreen = ({ navigation }:any) => {
       </View>
 
       <FlatList
-        data={[...dummyStudents, { id: 'add' }]}
+        data={[...students, { id: 'add' }]}
         renderItem={({ item }) =>
           item.id === 'add' ? renderAddProfile() : renderStudent({ item })
         }

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {View,Text,TouchableOpacity,FlatList,StyleSheet,Image,} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -6,33 +6,7 @@ import { useAuth } from '../../auth/context/AuthContext';
 import LiveClock from '../../../components/LiveClock';
 
 export const DashboardScreen = ({ navigation }: any) => {
-  const { user, students, addStudent, selectStudent, logout } = useAuth();
-
-  useEffect(() => {
-    if (user?.role === 'teacher' && students.length === 0) {
-      addStudent({
-        id: '1',
-        name: 'Aarav',
-        age: 8,
-        disorder: 'ASD',
-        avatar: require('../../../assets/Avatar/avatar-1.png'),
-      });
-      addStudent({
-        id: '2',
-        name: 'Priya',
-        age: 7,
-        disorder: 'ADHD',
-        avatar: require('../../../assets/Avatar/avatar-2.png'),
-      });
-      addStudent({
-        id: '3',
-        name: 'Rohan',
-        age: 9,
-        disorder: 'ID',
-        avatar: require('../../../assets/Avatar/avatar-3.png'),
-      });
-    }
-  }, []);
+  const { students, selectStudent, logout } = useAuth();
 
   const handleStudentPress = (id: string) => {
     selectStudent(id);

@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { NativeModules, Platform } from 'react-native';
 
 declare const process: {
   env: {
@@ -26,9 +26,24 @@ type QuizPayload = {
   ID: number;
 };
 
+const DEV_HOST = (() => {
+  const scriptURL = NativeModules?.SourceCode?.scriptURL as string | undefined;
+  if (scriptURL) {
+    const match = scriptURL.match(/^https?:\/\/([^:/]+)(?::\d+)?\//);
+    if (match?.[1]) {
+      return match[1];
+    }
+  }
+  return null;
+})();
+
 const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL ||
-  (Platform.OS === 'android' ? 'http://10.0.2.2:5001' : 'http://localhost:5001');
+  (DEV_HOST
+    ? `http://${DEV_HOST}:5001`
+    : Platform.OS === 'android'
+      ? 'http://10.0.2.2:5001'
+      : 'http://localhost:5001');
 
 async function authedRequest<T>(
   token: string,

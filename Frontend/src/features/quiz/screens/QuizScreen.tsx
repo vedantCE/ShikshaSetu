@@ -14,7 +14,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import LinearGradient from 'react-native-linear-gradient';
 import type { RootStackParamList } from '../../../navigation/RootNavigator';
 import type { QuizAnswer } from '../types/quiz_types';
 import { QUIZ_QUESTIONS, QUIZ_OPTIONS } from '../data/quizQuestion';
@@ -31,16 +30,17 @@ import {
 
 // Map question IDs to their corresponding images
 const QUESTION_IMAGES: { [key: number]: any } = {
-  1: require('../assets/images/Question1.png'),
-  2: require('../assets/images/Question2.png'),
-  3: require('../assets/images/Question3.png'),
-  4: require('../assets/images/Question4.png'),
-  5: require('../assets/images/Question5.png'),
-  6: require('../assets/images/Question6.png'),
-  7: require('../assets/images/Question7.png'),
-  8: require('../assets/images/Question8.png'),
-  9: require('../assets/images/Question9.png'),
-  10: require('../assets/images/Question10.png'),
+  1: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644607/Question1_wljnr0.png",
+  2: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644618/Question2_frdvnz.png",
+  3: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644595/Question3_tlb5wt.png",
+  4: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644606/Question4_msgdsf.png",
+  5: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644559/Question5_yj0r4c.png",
+  6: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644628/Question6_vcg9gp.png",
+  7: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644568/Question7_dmzgiy.png",
+  8: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644595/Question3_tlb5wt.png",
+  9: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644632/Question9_oscbkl.png",
+  10: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644632/Question10_blxvis.png",
+
 };
 
 type QuizScreenNavigationProp = NativeStackNavigationProp<
@@ -114,7 +114,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({ navigation }) => {
 
         <View style={styles.imageContainer}>
           <Image
-            source={QUESTION_IMAGES[currentQuestion.id]}
+            source={{uri:QUESTION_IMAGES[currentQuestion.id]}}
             style={styles.questionImage}
             resizeMode="cover"
           />

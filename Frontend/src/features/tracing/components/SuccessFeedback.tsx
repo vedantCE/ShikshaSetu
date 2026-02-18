@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -23,7 +23,7 @@ export const SuccessFeedback: React.FC<SuccessFeedbackProps> = ({
       withSpring(1.2, { damping: 2 }),
       withSpring(1)
     );
-  }, [success, stars]);
+  }, [success, stars, scale]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],

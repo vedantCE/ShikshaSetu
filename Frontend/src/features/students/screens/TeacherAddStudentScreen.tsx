@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  View,
   Text,
   TextInput,
   Pressable,
@@ -11,23 +10,38 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { palette, metrics, typography } from '../../../theme/design';
+import { useAuth } from '../../auth/context/AuthContext';
 
 const TeacherAddStudentScreen = ({ navigation }: any) => {
+  const { addStudent } = useAuth();
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [disorder, setDisorder] = useState('');
   const [password, setPassword] = useState('');
   const [contact, setContact] = useState('');
   const [address, setAddress] = useState('');
-  const [avatar, setAvatar] = useState(null); // Will hold image URI
+  const [avatar] = useState<string | null>(null); // Will hold image URI
 
   const handleAdd = () => {
-    if (!name || !age || !disorder || !password) {
-      Alert.alert('Error', 'Please fill required fields');
+    const errors: string[] = [];
+    if (!name.trim()) errors.push('Name');
+    if (!age.trim()) errors.push('Age');
+    if (!disorder.trim()) errors.push('Disorder');
+    if (!password.trim()) errors.push('Password');
+    if (errors.length) {
+      Alert.alert('Missing fields', errors.join(', '));
       return;
     }
 
-    // Show success and ask about quiz
+    const newId = Date.now().toString();
+    addStudent({
+      id: newId,
+      name: name.trim(),
+      age: Number(age),
+      disorder: disorder.trim(),
+    });
+
     Alert.alert(
       'Success 🎉',
       `${name} added successfully!\n\nWould you like to take a disorder assessment quiz?`,
@@ -42,9 +56,9 @@ const TeacherAddStudentScreen = ({ navigation }: any) => {
           style: 'cancel',
         },
       ],
-      { cancelable: false }
+      { cancelable: false },
     );
-  }
+  };
 
   const pickAvatar = () => {
     // TODO: Use expo-image-picker or react-native-image-picker
@@ -54,7 +68,7 @@ const TeacherAddStudentScreen = ({ navigation }: any) => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f6f8f8' }}>
+    <SafeAreaView style={styles.root}>
       <ScrollView style={styles.container}>
         <Text style={styles.title}>Add New Student</Text>
 
@@ -62,7 +76,7 @@ const TeacherAddStudentScreen = ({ navigation }: any) => {
           {avatar ? (
             <Image source={{ uri: avatar }} style={styles.avatar} />
           ) : (
-            <Icon name="camera-plus" size={50} color="#888" />
+            <Icon name="camera-plus" size={50} color={palette.muted} />
           )}
           <Text style={styles.avatarText}>Tap to add photo</Text>
         </Pressable>
@@ -117,32 +131,39 @@ const TeacherAddStudentScreen = ({ navigation }: any) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, backgroundColor: '#f6f8f8' },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    textAlign: 'center',
-    marginBottom: 32,
+  root: { flex: 1, backgroundColor: palette.background },
+  container: {
+    flex: 1,
+    padding: metrics.spacing,
+    backgroundColor: palette.background,
   },
-  avatarContainer: { alignItems: 'center', marginBottom: 24 },
+  title: {
+    ...typography.title,
+    textAlign: 'center',
+    marginBottom: metrics.spacing * 2,
+  },
+  avatarContainer: {
+    alignItems: 'center',
+    marginBottom: metrics.spacing * 1.5,
+  },
   avatar: { width: 120, height: 120, borderRadius: 60 },
-  avatarText: { marginTop: 12, color: '#1B337F', fontSize: 16 },
+  avatarText: { marginTop: 12, color: palette.primary, fontSize: 16 },
   input: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
+    backgroundColor: palette.card,
+    borderRadius: metrics.radius,
+    padding: metrics.spacing,
+    marginBottom: metrics.spacing,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#ddd',
-    color: '#000000',
+    borderColor: palette.border,
+    color: palette.text,
   },
   submitButton: {
-    backgroundColor: '#1B337F',
-    padding: 18,
+    backgroundColor: palette.primary,
+    padding: metrics.spacing + 2,
     borderRadius: 30,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: metrics.spacing,
   },
   submitText: { color: '#fff', fontSize: 18, fontWeight: '700' },
 });

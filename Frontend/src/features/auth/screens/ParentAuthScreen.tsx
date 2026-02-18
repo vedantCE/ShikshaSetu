@@ -64,7 +64,7 @@ export const ParentAuthScreen = ({ navigation }: any) => {
         });
         setStudents([]);
         Alert.alert('Success', 'Parent account created!');
-        navigation.replace('ParentDashboard');
+        navigation.replace('ParentDashboardScreen');
       } else {
         const response = await loginUser({
           user_email: email,
@@ -87,7 +87,7 @@ export const ParentAuthScreen = ({ navigation }: any) => {
             disorder: child.disorder_type,
           }))
         );
-        navigation.replace('ParentDashboard');
+        navigation.replace('ParentDashboardScreen');
       }
     } catch (error: any) {
       Alert.alert('Auth Error', error?.message || 'Request failed');

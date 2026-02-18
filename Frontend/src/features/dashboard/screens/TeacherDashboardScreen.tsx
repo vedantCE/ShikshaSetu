@@ -11,9 +11,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAuth } from '../../auth/context/AuthContext';
 import LiveClock from '../../../components/LiveClock';
+import { palette, metrics, typography } from '../../../theme/design';
 
 const TeacherDashboardScreen = ({ navigation }:any) => {
-  const { students, selectStudent } = useAuth();
+  const { students, selectStudent, user } = useAuth();
 
   const renderStudent = ({ item }:any) => (
     <Pressable
@@ -27,7 +28,7 @@ const TeacherDashboardScreen = ({ navigation }:any) => {
         {item.avatar ? (
           <Image source={item.avatar} style={styles.avatar} />
         ) : (
-          <Icon name="account-child" size={44} color="#1B337F" />
+          <Icon name="account-child" size={44} color={palette.primary} />
         )}
       </View>
       <Text style={styles.profileName}>{item.name}</Text>
@@ -40,7 +41,7 @@ const TeacherDashboardScreen = ({ navigation }:any) => {
       onPress={() => navigation.navigate('TeacherAddStudent')}
     >
       <View style={styles.addIconContainer}>
-        <Icon name="plus" size={48} color="#A0A0A0" />
+        <Icon name="plus" size={48} color={palette.muted} />
       </View>
       <Text style={styles.addProfileText}>Add Profile</Text>
     </Pressable>
@@ -49,8 +50,46 @@ const TeacherDashboardScreen = ({ navigation }:any) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <LiveClock />
-        <Text style={styles.title}>Who is learning today?</Text>
+        <View style={styles.greetingRow}>
+          <View>
+            <Text style={styles.greetingTitle}>Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user?.name || 'Teacher'}</Text>
+            <LiveClock />
+          </View>
+          <View style={styles.avatarSmall}>
+            <Icon name="account-circle" size={40} color={palette.primary} />
+          </View>
+        </View>
+        <View style={styles.statsRow}>
+          <View style={styles.statCard}>
+            <View style={styles.statIcon}>
+              <Icon name="account-group" size={22} color={palette.primary} />
+            </View>
+            <Text style={styles.statValue}>{students.length}</Text>
+            <Text style={styles.statLabel}>Total Students</Text>
+          </View>
+          <View style={styles.statCard}>
+            <View style={styles.statIcon}>
+              <Icon name="calendar-clock" size={22} color={palette.primary} />
+            </View>
+            <Text style={styles.statValue}>5</Text>
+            <Text style={styles.statLabel}>Today's Sessions</Text>
+          </View>
+        </View>
+        <View style={styles.quickActions}>
+          <Pressable style={styles.actionCard} onPress={() => navigation.navigate('TeacherAddStudent')}>
+            <Icon name="account-plus" size={22} color={palette.primary} />
+            <Text style={styles.actionText}>Add Student</Text>
+          </Pressable>
+          <Pressable style={styles.actionCard} onPress={() => navigation.navigate('TchSchedule')}>
+            <Icon name="calendar-multiselect" size={22} color={palette.primary} />
+            <Text style={styles.actionText}>Generate Timetable</Text>
+          </Pressable>
+          <Pressable style={styles.actionCard} onPress={() => {}}>
+            <Icon name="chart-line" size={22} color={palette.primary} />
+            <Text style={styles.actionText}>View Analytics</Text>
+          </Pressable>
+        </View>
+        <Text style={styles.sectionTitle}>Who is learning today?</Text>
       </View>
 
       <FlatList
@@ -70,22 +109,86 @@ const TeacherDashboardScreen = ({ navigation }:any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F0F2F5',
+    backgroundColor: palette.background,
   },
   header: {
-    paddingHorizontal: 24,
+    paddingHorizontal: metrics.spacing,
     paddingTop: 20,
-    paddingBottom: 30,
-    alignItems: 'center',
+    paddingBottom: 16,
   },
-  title: {
+  greetingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  greetingTitle: { ...typography.title },
+  avatarSmall: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: palette.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...metrics.shadow,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: metrics.spacing,
+    marginTop: metrics.spacing,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: palette.card,
+    borderRadius: metrics.radius,
+    padding: metrics.spacing,
+    alignItems: 'flex-start',
+    ...metrics.shadow,
+  },
+  statIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#EEF5FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  statValue: {
     fontSize: 24,
-    fontWeight: '700',
-    color: '#000',
-    marginTop: 8,
+    fontWeight: '800',
+    color: palette.text,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: palette.muted,
+    marginTop: 2,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    gap: metrics.spacing,
+    marginTop: metrics.spacing,
+  },
+  actionCard: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: palette.card,
+    borderRadius: metrics.radius,
+    padding: metrics.spacing,
+    ...metrics.shadow,
+  },
+  actionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: palette.text,
+  },
+  sectionTitle: {
+    ...typography.title,
+    marginTop: metrics.spacing,
   },
   grid: {
-    paddingHorizontal: 24,
+    paddingHorizontal: metrics.spacing,
     paddingBottom: 30,
   },
   columnWrapper: {
@@ -94,15 +197,11 @@ const styles = StyleSheet.create({
   },
   profileCard: {
     width: '47%',
-    backgroundColor: '#FFF',
-    borderRadius: 24,
-    padding: 20,
+    backgroundColor: palette.card,
+    borderRadius: metrics.radius + 6,
+    padding: metrics.spacing,
     alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    ...metrics.shadow,
   },
   avatarContainer: {
     width: 100,
@@ -121,16 +220,16 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#000',
+    color: palette.text,
   },
   addProfileCard: {
     width: '47%',
-    backgroundColor: '#FFF',
-    borderRadius: 24,
+    backgroundColor: palette.card,
+    borderRadius: metrics.radius + 6,
     borderWidth: 2,
-    borderColor: '#E0E0E0',
+    borderColor: palette.border,
     borderStyle: 'dashed',
-    padding: 20,
+    padding: metrics.spacing,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -145,7 +244,7 @@ const styles = StyleSheet.create({
   addProfileText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#A0A0A0',
+    color: palette.muted,
   },
 });
 

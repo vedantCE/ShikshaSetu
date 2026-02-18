@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  View,
   Text,
   TextInput,
   Pressable,
@@ -18,7 +17,7 @@ const ParentAddChildScreen = ({ navigation }: any) => {
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [password, setPassword] = useState('');
-  const [avatar, setAvatar] = useState(null);
+  const [avatar] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleAdd = async () => {
@@ -95,13 +94,18 @@ const ParentAddChildScreen = ({ navigation }: any) => {
         <Text style={styles.avatarText}>Tap to add photo</Text>
       </Pressable>
 
-      <TextInput placeholder="Child Name *" value={name} onChangeText={setName} style={styles.input} />
+      <TextInput placeholder="Child Name *" 
+      value={name} onChangeText={setName} 
+      style={styles.input}
+      placeholderTextColor="#94a3b8"
+      />
       <TextInput
         placeholder="Age *"
         value={age}
         onChangeText={setAge}
         keyboardType="numeric"
         style={styles.input}
+        placeholderTextColor="#94a3b8"
       />
       <TextInput
         placeholder="Child Password *"
@@ -109,6 +113,7 @@ const ParentAddChildScreen = ({ navigation }: any) => {
         onChangeText={setPassword}
         secureTextEntry
         style={styles.input}
+        placeholderTextColor="#94a3b8"
       />
 
       <Pressable style={styles.submitButton} onPress={handleAdd} disabled={isSaving}>

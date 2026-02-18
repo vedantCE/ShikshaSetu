@@ -42,7 +42,7 @@ const API_BASE_URL =
   (DEV_HOST
     ? `http://${DEV_HOST}:5001`
     : Platform.OS === 'android'
-      ? 'http://10.0.2.2:5001'
+      ? 'http://192.168.0.106:5001'
       : 'http://localhost:5001');
 
 async function authedRequest<T>(
@@ -51,14 +51,19 @@ async function authedRequest<T>(
   method: 'GET' | 'POST',
   payload?: unknown
 ): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: payload ? JSON.stringify(payload) : undefined,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: payload ? JSON.stringify(payload) : undefined,
+    });
+  } catch {
+    throw new Error(`Cannot reach server at ${API_BASE_URL}. Check backend, host IP, and port.`);
+  }
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {

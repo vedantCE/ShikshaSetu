@@ -46,7 +46,7 @@ const API_BASE_URL =
   (DEV_HOST
     ? `http://${DEV_HOST}:5001`
     : Platform.OS === 'android'
-      ? 'http://10.0.2.2:5001'
+      ? 'http://192.168.0.106:5001'
       : 'http://localhost:5001');
 
 async function postJson<T>(path: string, payload: unknown): Promise<T> {

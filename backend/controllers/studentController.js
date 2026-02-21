@@ -49,12 +49,26 @@ exports.getChildren = async (req, res) => {
 };
 
 exports.submitQuizResult = async (req, res) => {
-  const { student_id } = req.params;
-  const scores = req.body;
+  const student_id = req.params.student_id || req.body.student_id;
   const { user_id, user_role } = req.user;
 
   if (user_role !== 'parent') {
     return res.status(403).json({ error: 'Only parents can submit quiz results' });
+  }
+
+  if (!student_id) {
+    return res.status(400).json({ error: 'student_id is required' });
+  }
+
+  // Support both payload styles:
+  // 1) asd_percentage / adhd_percentage / id_percentage
+  // 2) AUTISM / ADHD / ID
+  const asd = Number(req.body.asd_percentage ?? req.body.AUTISM ?? 0);
+  const adhd = Number(req.body.adhd_percentage ?? req.body.ADHD ?? 0);
+  const id = Number(req.body.id_percentage ?? req.body.ID ?? 0);
+
+  if ([asd, adhd, id].some((value) => Number.isNaN(value) || value < 0)) {
+    return res.status(400).json({ error: 'Percentages must be valid non-negative numbers' });
   }
 
   try {
@@ -67,11 +81,21 @@ exports.submitQuizResult = async (req, res) => {
       return res.status(404).json({ error: 'Child not found or access denied' });
     }
 
-    const maxDisorder = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
+    let disorderType = 'Unknown';
+    const highest = Math.max(asd, adhd, id);
+    if (highest > 0) {
+      if (highest === asd) {
+        disorderType = 'ASD';
+      } else if (highest === adhd) {
+        disorderType = 'ADHD';
+      } else {
+        disorderType = 'Intellectual Disability';
+      }
+    }
 
     const result = await pool.query(
-      'UPDATE student SET disorder_type = $1 WHERE student_id = $2 RETURNING student_id, student_name, disorder_type',
-      [maxDisorder, student_id]
+      'UPDATE student SET disorder_type = $1, updated_at = NOW() WHERE student_id = $2 RETURNING student_id, student_name, disorder_type, updated_at',
+      [disorderType, student_id]
     );
 
     res.json(result.rows[0]);

@@ -93,16 +93,21 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
 }) => {
     const { user, currentStudent, setStudents } = useAuth();
     const params = route.params || {};
-    const { category, scores } = params;
+    const { category, scores, studentId } = params;
 
     useEffect(() => {
         const syncQuizResult = async () => {
-            if (!user?.token || user.role !== 'parent' || !currentStudent || !scores) {
+            if (!user?.token || user.role !== 'parent' || !scores) {
+                return;
+            }
+
+            const targetStudentId = studentId || currentStudent?.id;
+            if (!targetStudentId) {
                 return;
             }
 
             try {
-                const updated = await submitChildQuizResult(user.token, currentStudent.id, {
+                const updated = await submitChildQuizResult(user.token, targetStudentId, {
                     ADHD: scores.ADHD,
                     AUTISM: scores.AUTISM,
                     ID: scores.ID,
@@ -121,7 +126,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
         };
 
         syncQuizResult();
-    }, [user, currentStudent, scores, setStudents]);
+    }, [user, currentStudent, scores, studentId, setStudents]);
 
     const handleRetakeQuiz = () => {
         navigation.navigate('AssessmentQuizHome');

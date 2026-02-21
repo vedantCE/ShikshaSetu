@@ -59,7 +59,10 @@ const ParentAddChildScreen = ({ navigation }: any) => {
         [
           {
             text: 'Take Assessment Quiz',
-            onPress: () => navigation.navigate('AssessmentQuizHome'),
+            onPress: () =>
+              navigation.navigate('AssessmentQuizHome', {
+                studentId: String(child.student_id),
+              }),
           },
           {
             text: 'Skip to Activities',

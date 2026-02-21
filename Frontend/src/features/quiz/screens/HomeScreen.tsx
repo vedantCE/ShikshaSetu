@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RouteProp } from '@react-navigation/native';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import type { RootStackParamList } from '../../../navigation/RootNavigator';
 import {
@@ -26,6 +27,8 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<
     RootStackParamList,
     'AssessmentQuizHome'
 >;
+
+type HomeScreenRouteProp = RouteProp<RootStackParamList, 'AssessmentQuizHome'>;
 
 // Simple SVG Icons for Focus Areas
 const ADHDIcon = ({ color }: { color: string }) => (
@@ -69,6 +72,7 @@ const ClockIcon = ({ color }: { color: string }) => (
 
 interface HomeScreenProps {
     navigation: HomeScreenNavigationProp;
+    route: HomeScreenRouteProp;
 }
 
 const FocusAreaCard = ({ title, subtitle, color, icon }: any) => (
@@ -81,9 +85,9 @@ const FocusAreaCard = ({ title, subtitle, color, icon }: any) => (
     </View>
 );
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => {
     const handleStartQuiz = () => {
-        navigation.navigate('AssessmentQuiz');
+        navigation.navigate('AssessmentQuiz', { studentId: route.params?.studentId });
     };
 
     return (

@@ -86,6 +86,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const addStudent = (student: Student) => {
     setStudentsState(prev => [...prev, student]);
+    // Keep selection in sync when a brand new child/student is created.
+    setCurrentStudent(student);
   };
 
   const replaceStudents = (incomingStudents: Student[] | ((prev: Student[]) => Student[])) => {

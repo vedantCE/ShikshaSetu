@@ -14,6 +14,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+import { RouteProp } from '@react-navigation/native';
+// import LinearGradient from 'react-native-linear-gradient';
+
 import type { RootStackParamList } from '../../../navigation/RootNavigator';
 import type { QuizAnswer } from '../types/quiz_types';
 import { QUIZ_QUESTIONS, QUIZ_OPTIONS } from '../data/quizQuestion';
@@ -48,11 +52,14 @@ type QuizScreenNavigationProp = NativeStackNavigationProp<
   'AssessmentQuiz'
 >;
 
+type QuizScreenRouteProp = RouteProp<RootStackParamList, 'AssessmentQuiz'>;
+
 interface QuizScreenProps {
   navigation: QuizScreenNavigationProp;
+  route: QuizScreenRouteProp;
 }
 
-export const QuizScreen: React.FC<QuizScreenProps> = ({ navigation }) => {
+export const QuizScreen: React.FC<QuizScreenProps> = ({ navigation, route }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswer[]>([]);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -83,7 +90,11 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({ navigation }) => {
       const category = evaluateResult(rawScores);
       const scores = calculatePercentages(rawScores);
 
-      navigation.navigate('AssessmentResult', { category, scores });
+      navigation.navigate('AssessmentResult', {
+        category,
+        scores,
+        studentId: route.params?.studentId,
+      });
     } else {
       setCurrentQuestionIndex((prev) => prev + 1);
       setSelectedOption(null);
@@ -238,4 +249,3 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '45deg' }],
   },
 });
-

@@ -41,9 +41,9 @@ export type RootStackParamList = {
   ParentAddChild: undefined;
   TeacherAddStudent: undefined;
   ActivityHub: undefined;
-  AssessmentQuizHome: undefined;
-  AssessmentQuiz: undefined;
-  AssessmentResult: { category: ResultCategory; scores: QuizScores };
+  AssessmentQuizHome: { studentId?: string } | undefined;
+  AssessmentQuiz: { studentId?: string } | undefined;
+  AssessmentResult: { category: ResultCategory; scores: QuizScores; studentId?: string };
   LetterGrid: undefined;
   NumberGrid: undefined;
   ShapeGrid: undefined;

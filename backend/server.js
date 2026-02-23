@@ -4,6 +4,7 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
 const studentRoutes = require('./routes/studentRoutes');
+const tugOfWarRoutes = require('./routes/tugOfWarRoutes');
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(express.json());
 
 app.use('/auth', authRoutes);
 app.use('/students', studentRoutes);
+app.use('/tugofwar', tugOfWarRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'ShikshaSetu Backend API' });

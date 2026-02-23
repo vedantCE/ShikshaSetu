@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { palette, metrics, typography } from '../../../theme/design';
 
+// TODO: Replace with dynamic assignment data from API when backend is available
 const templates = [
   { id: '1', title: 'Sensory Focus: Audio', desc: 'Identify and distinguish distant sounds in a busy environment.' },
   { id: '2', title: 'Social Cues: Emotions', desc: 'Interactive quiz on recognizing facial expressions and emotions.' },

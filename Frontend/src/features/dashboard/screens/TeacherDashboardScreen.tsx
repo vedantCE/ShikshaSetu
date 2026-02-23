@@ -6,6 +6,7 @@ import {
   FlatList,
   Pressable,
   Image,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -13,10 +14,13 @@ import { useAuth } from '../../auth/context/AuthContext';
 import LiveClock from '../../../components/LiveClock';
 import { palette, metrics, typography } from '../../../theme/design';
 
-const TeacherDashboardScreen = ({ navigation }:any) => {
+const TeacherDashboardScreen = ({ navigation }: any) => {
   const { students, selectStudent, user } = useAuth();
 
-  const renderStudent = ({ item }:any) => (
+  // TODO: Replace with actual API data when backend is ready
+  const todaysSessions = students.length > 0 ? Math.min(students.length * 2, 10) : 0;
+
+  const renderStudent = ({ item }: any) => (
     <Pressable
       style={styles.profileCard}
       onPress={() => {
@@ -26,12 +30,15 @@ const TeacherDashboardScreen = ({ navigation }:any) => {
     >
       <View style={styles.avatarContainer}>
         {item.avatar ? (
-          <Image source={item.avatar} style={styles.avatar} />
+          <Image source={{ uri: item.avatar }} style={styles.avatar} />
         ) : (
           <Icon name="account-child" size={44} color={palette.primary} />
         )}
       </View>
       <Text style={styles.profileName}>{item.name}</Text>
+      {item.disorder && item.disorder !== 'Unknown' && (
+        <Text style={{ fontSize: 11, color: palette.muted }}>{item.disorder}</Text>
+      )}
     </Pressable>
   );
 
@@ -71,7 +78,7 @@ const TeacherDashboardScreen = ({ navigation }:any) => {
             <View style={styles.statIcon}>
               <Icon name="calendar-clock" size={22} color={palette.primary} />
             </View>
-            <Text style={styles.statValue}>5</Text>
+            <Text style={styles.statValue}>{todaysSessions}</Text>
             <Text style={styles.statLabel}>Today's Sessions</Text>
           </View>
         </View>
@@ -84,7 +91,14 @@ const TeacherDashboardScreen = ({ navigation }:any) => {
             <Icon name="calendar-multiselect" size={22} color={palette.primary} />
             <Text style={styles.actionText}>Generate Timetable</Text>
           </Pressable>
-          <Pressable style={styles.actionCard} onPress={() => {}}>
+          <Pressable style={styles.actionCard} onPress={() => {
+            if (students.length > 0) {
+              // Navigate with first student for now; or use currentStudent
+              navigation.navigate('Analytics', { studentId: students[0].id });
+            } else {
+              Alert.alert('No Students', 'Add a student first to view analytics.');
+            }
+          }}>
             <Icon name="chart-line" size={22} color={palette.primary} />
             <Text style={styles.actionText}>View Analytics</Text>
           </Pressable>

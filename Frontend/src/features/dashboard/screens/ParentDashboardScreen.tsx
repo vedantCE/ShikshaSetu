@@ -13,12 +13,29 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAuth } from '../../auth/context/AuthContext';
 
 const ParentDashboardScreen = ({ navigation }: any) => {
-  const { user, students, selectStudent } = useAuth();
+  const { user, students, selectStudent, logout } = useAuth();
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+          },
+        },
+      ],
+    );
+  };
 
   const showProfile = () => {
     Alert.alert(
       'Parent Profile',
-      `Name: ${user?.name || 'Parent'}\nEmail: ${user?.email || 'parent@example.com'}\nContact: +91 98765 43210\nAddress: Ahmedabad, Gujarat`
+      `Name: ${user?.name || 'Parent'}\nEmail: ${user?.email || 'parent@example.com'}`
     );
   };
 
@@ -31,13 +48,16 @@ const ParentDashboardScreen = ({ navigation }: any) => {
       }}
     >
       {item.avatar ? (
-        <Image source={item.avatar} style={styles.avatar} />
+        <Image source={{ uri: item.avatar }} style={styles.avatar} />
       ) : (
         <View style={[styles.avatar, styles.avatarFallback]}>
           <Icon name="account-child" size={36} color="#1B337F" />
         </View>
       )}
       <Text style={styles.childName}>{item.name}</Text>
+      {item.disorder && item.disorder !== 'Unknown' && (
+        <Text style={{ fontSize: 12, color: '#64748B', marginLeft: 4 }}>{item.disorder}</Text>
+      )}
       <Icon name="chevron-right" size={28} color="#888" />
     </Pressable>
   );
@@ -46,9 +66,14 @@ const ParentDashboardScreen = ({ navigation }: any) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>My Children</Text>
-        <Pressable onPress={showProfile}>
-          <Icon name="account-circle" size={44} color="#1B337F" />
-        </Pressable>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <Pressable onPress={handleLogout}>
+            <Icon name="logout" size={28} color="#D32F2F" />
+          </Pressable>
+          <Pressable onPress={showProfile}>
+            <Icon name="account-circle" size={44} color="#1B337F" />
+          </Pressable>
+        </View>
       </View>
 
       <FlatList

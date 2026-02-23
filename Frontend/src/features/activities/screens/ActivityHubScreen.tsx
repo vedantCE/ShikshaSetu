@@ -1,5 +1,4 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -27,6 +26,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigation/RootNavigator';
 import { useAuth } from '../../auth/context/AuthContext';
 import LottieView from 'lottie-react-native';
+import { getPoints } from '../store/pointsStore';
+import { Alert } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -65,7 +66,29 @@ const ScalePressable = ({ children, onPress, style }: { children: React.ReactNod
 };
 
 export const ActivityHubScreen = ({ navigation }: Props) => {
-  const { user, currentStudent } = useAuth(); // Assuming useAuth provides user info
+  const { user, currentStudent } = useAuth();
+  const [totalPoints, setTotalPoints] = useState(0);
+
+  const loadPoints = useCallback(async () => {
+    const pts = await getPoints();
+    setTotalPoints(pts);
+  }, []);
+
+  useEffect(() => {
+    loadPoints();
+  }, [loadPoints]);
+
+  // Reload points when screen comes back into focus
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadPoints();
+    });
+    return unsubscribe;
+  }, [navigation, loadPoints]);
+
+  const showComingSoon = (feature: string) => {
+    Alert.alert('Coming Soon', `${feature} is coming soon! Stay tuned.`);
+  };
 
   // Helper for greeting based on time
   const getGreeting = () => {
@@ -88,8 +111,11 @@ export const ActivityHubScreen = ({ navigation }: Props) => {
         >
           <View style={styles.profileSection}>
             <View style={styles.avatarContainer}>
-              {/* Placeholder Avatar */}
-              <Image source={require('../assets/Activityhub/abc.png')} style={styles.avatar} />
+              {currentStudent?.avatar ? (
+                <Image source={{ uri: currentStudent.avatar }} style={styles.avatar} />
+              ) : (
+                <Image source={require('../assets/Activityhub/abc.png')} style={styles.avatar} />
+              )}
             </View>
             <View>
               <Text style={styles.greetingText}>{getGreeting()}</Text>
@@ -101,13 +127,13 @@ export const ActivityHubScreen = ({ navigation }: Props) => {
 
           <View style={styles.coinBadge}>
             <Icon name="star-circle" size={20} color="#FFF" />
-            <Text style={styles.coinText}>12000</Text>
+            <Text style={styles.coinText}>{totalPoints}</Text>
           </View>
         </Animated.View>
 
         {/* 2️⃣ DAILY HABIT CARD */}
         <Animated.View entering={FadeInUp.delay(200).duration(600).springify()}>
-          <ScalePressable onPress={() => { }} style={styles.habitCard}>
+          <ScalePressable onPress={() => showComingSoon('Daily Habit')} style={styles.habitCard}>
             <View style={styles.habitTextContainer}>
               <Text style={styles.habitLabel}>Today's good habit</Text>
               <Text style={styles.habitQuote}>"Kindness makes the world a better place."</Text>
@@ -170,7 +196,7 @@ export const ActivityHubScreen = ({ navigation }: Props) => {
         {/* 4️⃣ PUZZLE GAME CARD */}
         <Animated.View entering={ZoomIn.delay(600).springify()}>
           <ScalePressable
-            onPress={() => { }} // Navigate to PuzzleScreen when available
+            onPress={() => showComingSoon('Puzzle Game')}
             style={styles.puzzleCard}
           >
             <LinearGradient
@@ -192,6 +218,31 @@ export const ActivityHubScreen = ({ navigation }: Props) => {
           </ScalePressable>
         </Animated.View>
 
+        {/* 4.5️⃣ TUG OF WAR CARD */}
+        <Animated.View entering={ZoomIn.delay(650).springify()}>
+          <ScalePressable
+            onPress={() => navigation.navigate('TugOfWarDifficulty')}
+            style={styles.puzzleCard}
+          >
+            <LinearGradient
+              colors={['#EEF2FF', '#E0E7FF']}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+              style={styles.puzzleGradient}
+            >
+              <View style={styles.puzzleContent}>
+                <View>
+                  <Text style={styles.puzzleTitle}>Tug of War</Text>
+                  <Text style={styles.puzzleSubtitle}>Basic Math Challenge</Text>
+                </View>
+                <View style={[styles.playButtonProps, { backgroundColor: '#3B82F6' }]}>
+                  <Text style={styles.playButtonText}>Play</Text>
+                  <Icon name="sword-cross" size={20} color="#FFF" />
+                </View>
+              </View>
+            </LinearGradient>
+          </ScalePressable>
+        </Animated.View>
+
         {/* 5️⃣ STORIES SECTION */}
         <Animated.View entering={FadeInUp.delay(700).springify()} style={styles.storiesSection}>
           <View style={styles.storiesHeader}>
@@ -201,7 +252,7 @@ export const ActivityHubScreen = ({ navigation }: Props) => {
             </Pressable>
           </View>
 
-          <ScalePressable onPress={() => { }} style={styles.storyCard}>
+          <ScalePressable onPress={() => showComingSoon('Stories')} style={styles.storyCard}>
             <LinearGradient
               colors={['#FFF8E1', '#FFF3E0']}
               style={styles.storyGradient}

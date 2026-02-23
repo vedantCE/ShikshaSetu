@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Alert } from 'react-native';
-import { useAuth } from '../../auth/context/AuthContext'; // adjust path if needed
+import { Alert, View, Text, Pressable, StyleSheet } from 'react-native';
+import { useAuth } from '../../auth/context/AuthContext';
 import { AuthLayout } from '../components/AuthLayout';
 import { CustomInput } from '../components/CustomInput';
 import { PencilLoader } from '../components/PencilLoader';
 import { loginUser, registerUser } from '../services/authApi';
 import { fetchChildren } from '../services/studentApi';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+
 export const ParentAuthScreen = ({ navigation }: any) => {
   const { login, setStudents } = useAuth();
 
@@ -18,13 +20,11 @@ export const ParentAuthScreen = ({ navigation }: any) => {
   const [contactNumber, setContactNumber] = useState('');
   const [secureText, setSecureText] = useState(true);
   const [secureTextConfirm, setSecureTextConfirm] = useState(true);
-// Loading state (required to show/hide the PencilLoader)
   const [loading, setLoading] = useState(false);
-
+  const [rememberMe, setRememberMe] = useState(true);
 
   const handleSubmit = async () => {
     if (isSignup) {
-      // === Signup validation ===
       if (!email || !password || !confirmPassword || !address || !contactNumber) {
         Alert.alert('Error', 'Please fill all fields');
         return;
@@ -34,7 +34,6 @@ export const ParentAuthScreen = ({ navigation }: any) => {
         return;
       }
     } else {
-      // === Login validation ===
       if (!email || !password) {
         Alert.alert('Error', 'Please enter email and password');
         return;
@@ -55,12 +54,13 @@ export const ParentAuthScreen = ({ navigation }: any) => {
           user_role: 'parent',
         });
 
-        login({
+        await login({
           user_id: response.user_id,
           role: response.user_role,
           email,
           token: response.token,
           name: response.user_name,
+          rememberMe,
         });
         setStudents([]);
         Alert.alert('Success', 'Parent account created!');
@@ -71,12 +71,13 @@ export const ParentAuthScreen = ({ navigation }: any) => {
           user_password: password,
         });
 
-        login({
+        await login({
           user_id: response.user_id,
           role: response.user_role,
           email,
           token: response.token,
           name: response.user_name,
+          rememberMe,
         });
         const children = await fetchChildren(response.token);
         setStudents(
@@ -85,6 +86,7 @@ export const ParentAuthScreen = ({ navigation }: any) => {
             name: child.student_name,
             age: child.age,
             disorder: child.disorder_type,
+            avatar: child.image_url || undefined,
           }))
         );
         navigation.replace('ParentDashboardScreen');
@@ -98,7 +100,6 @@ export const ParentAuthScreen = ({ navigation }: any) => {
 
   const handleTabChange = (tab: 'login' | 'signup') => {
     setIsSignup(tab === 'signup');
-    // Clear form when switching (optional, improves UX)
     setPassword('');
     setConfirmPassword('');
     setAddress('');
@@ -108,15 +109,34 @@ export const ParentAuthScreen = ({ navigation }: any) => {
   return (
     <AuthLayout
       title={isSignup ? "Create your Parent Account" : "Welcome Back Parent"}
-      subtitle="Sign up to support your child’s learning at home"
+      subtitle="Sign up to support your child's learning at home"
       activeTab={isSignup ? 'signup' : 'login'}
       onTabChange={handleTabChange}
       primaryButtonText={isSignup ? "Register" : "Login"}
       onPrimaryButtonPress={handleSubmit}
       onBackPress={() => navigation.goBack()}
-    // You can keep your footer (Remember Me / Forgot Password) here if needed
+      footer={
+        !isSignup ? (
+          <View style={localStyles.footerContainer}>
+            <Pressable
+              style={localStyles.rememberRow}
+              onPress={() => setRememberMe(!rememberMe)}
+            >
+              <Icon
+                name={rememberMe ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                size={22}
+                color={rememberMe ? '#1B337F' : '#888'}
+              />
+              <Text style={localStyles.rememberText}>Remember Me</Text>
+            </Pressable>
+            <Pressable onPress={() => navigation.navigate('ForgotPassword')}>
+              <Text style={localStyles.forgotText}>Forgot Password?</Text>
+            </Pressable>
+          </View>
+        ) : undefined
+      }
     >
-    
+
       {/* Common fields */}
       <CustomInput
         label="Email"
@@ -175,3 +195,27 @@ export const ParentAuthScreen = ({ navigation }: any) => {
     </AuthLayout>
   );
 };
+
+const localStyles = StyleSheet.create({
+  footerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  rememberRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  rememberText: {
+    fontSize: 14,
+    color: '#555',
+    fontWeight: '500',
+  },
+  forgotText: {
+    fontSize: 14,
+    color: '#1B337F',
+    fontWeight: '600',
+  },
+});

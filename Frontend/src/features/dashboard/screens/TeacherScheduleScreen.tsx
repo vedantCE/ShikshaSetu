@@ -6,6 +6,7 @@ import { palette, metrics, typography } from '../../../theme/design';
 
 const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
+// TODO: Replace with dynamic schedule data from API when backend is available
 const sessions = [
   { id: '1', time: '09:00 AM', title: 'Math', tag: 'Interactive', duration: '20 min', color: '#DCEBFF' },
   { id: '2', time: '09:30 AM', title: 'Break', tag: 'Sensory', duration: '10 min', color: '#E8FFF5' },

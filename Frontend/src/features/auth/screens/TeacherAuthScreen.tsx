@@ -57,12 +57,13 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
           user_role: 'teacher',
         });
 
-        login({
+        await login({
           user_id: response.user_id,
           role: response.user_role,
           email,
           token: response.token,
           name: response.user_name,
+          rememberMe,
         });
         Alert.alert('Success', 'Teacher account created!');
         navigation.replace('TeacherDashboard');
@@ -72,12 +73,13 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
           user_password: password,
         });
 
-        login({
+        await login({
           user_id: response.user_id,
           role: response.user_role,
           email,
           token: response.token,
           name: response.user_name,
+          rememberMe,
         });
         navigation.replace('TeacherDashboard');
       }
@@ -111,7 +113,7 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
         />
         <Text style={{ fontSize: 14, color: '#808080', fontWeight: '500' }}>Remember Me</Text>
       </TouchableOpacity>
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
         <Text style={{ fontSize: 14, color: '#1B337F', fontWeight: '700' }}>Forgot Password?</Text>
       </TouchableOpacity>
     </View>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  View,
   Text,
   TextInput,
   Pressable,
@@ -11,13 +12,16 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAuth } from '../../auth/context/AuthContext';
 import { createChild } from '../../auth/services/studentApi';
+import { launchCamera, launchImageLibrary, type ImagePickerResponse } from 'react-native-image-picker';
+import { Picker } from '@react-native-picker/picker';
 
 const ParentAddChildScreen = ({ navigation }: any) => {
   const { user, addStudent, selectStudent } = useAuth();
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [password, setPassword] = useState('');
-  const [avatar] = useState<string | null>(null);
+  const [disorder, setDisorder] = useState('Unknown');
+  const [avatar, setAvatar] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleAdd = async () => {
@@ -43,6 +47,8 @@ const ParentAddChildScreen = ({ navigation }: any) => {
         student_name: name,
         age: parsedAge,
         password,
+        imageUri: avatar,
+        disorder_type: disorder,
       });
 
       addStudent({
@@ -50,6 +56,7 @@ const ParentAddChildScreen = ({ navigation }: any) => {
         name: child.student_name,
         age: child.age,
         disorder: child.disorder_type,
+        avatar: child.image_url || undefined,
       });
       selectStudent(String(child.student_id));
 
@@ -79,9 +86,36 @@ const ParentAddChildScreen = ({ navigation }: any) => {
     }
   };
 
+  const handlePickerResponse = (response: ImagePickerResponse) => {
+    if (response.didCancel) return;
+    if (response.errorCode) {
+      Alert.alert('Error', response.errorMessage || 'Failed to pick image');
+      return;
+    }
+    const uri = response.assets?.[0]?.uri;
+    if (uri) setAvatar(uri);
+  };
+
   const pickAvatar = () => {
-    Alert.alert('Avatar', 'Pick child photo (implement image picker)');
-    // setAvatar('https://via.placeholder.com/120');
+    Alert.alert('Select Photo', 'Choose a source', [
+      {
+        text: 'Camera',
+        onPress: () =>
+          launchCamera(
+            { mediaType: 'photo', quality: 0.7, maxWidth: 400, maxHeight: 400 },
+            handlePickerResponse,
+          ),
+      },
+      {
+        text: 'Gallery',
+        onPress: () =>
+          launchImageLibrary(
+            { mediaType: 'photo', quality: 0.7, maxWidth: 400, maxHeight: 400 },
+            handlePickerResponse,
+          ),
+      },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
   };
 
   return (
@@ -97,10 +131,10 @@ const ParentAddChildScreen = ({ navigation }: any) => {
         <Text style={styles.avatarText}>Tap to add photo</Text>
       </Pressable>
 
-      <TextInput placeholder="Child Name *" 
-      value={name} onChangeText={setName} 
-      style={styles.input}
-      placeholderTextColor="#94a3b8"
+      <TextInput placeholder="Child Name *"
+        value={name} onChangeText={setName}
+        style={styles.input}
+        placeholderTextColor="#94a3b8"
       />
       <TextInput
         placeholder="Age *"
@@ -118,6 +152,19 @@ const ParentAddChildScreen = ({ navigation }: any) => {
         style={styles.input}
         placeholderTextColor="#94a3b8"
       />
+
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={disorder}
+          onValueChange={(val) => setDisorder(val)}
+          style={styles.picker}
+        >
+          <Picker.Item label="Select Disorder" value="Unknown" />
+          <Picker.Item label="ADHD" value="ADHD" />
+          <Picker.Item label="Autism" value="Autism" />
+          <Picker.Item label="Dyslexia" value="Dyslexia" />
+        </Picker>
+      </View>
 
       <Pressable style={styles.submitButton} onPress={handleAdd} disabled={isSaving}>
         <Text style={styles.submitText}>{isSaving ? 'Creating...' : 'Create & Start Learning'}</Text>
@@ -140,6 +187,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: '#ddd',
+    color: '#000000',
+  },
+  pickerContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    overflow: 'hidden',
+  },
+  picker: {
     color: '#000000',
   },
   submitButton: { backgroundColor: '#1B337F', padding: 18, borderRadius: 30, alignItems: 'center' },

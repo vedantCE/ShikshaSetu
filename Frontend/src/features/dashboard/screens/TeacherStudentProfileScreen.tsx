@@ -10,12 +10,14 @@ const TeacherStudentProfileScreen = ({ route }: any) => {
   const id = route?.params?.id as string | undefined;
   const student = students.find(s => s.id === id) || students[0] || { name: 'Student', age: 10 };
 
+  // TODO: Replace with actual API data when backend supports focus areas
   const focuses = [
     { label: 'Focus & Attention', value: 0.7 },
     { label: 'Social Communication', value: 0.5 },
     { label: 'Task Initiation', value: 0.35 },
   ];
 
+  // TODO: Replace with actual observation data from API
   const observations = [
     { id: '1', text: 'Had a great group activity today. Showed improved turn-taking.' },
     { id: '2', text: 'Struggled slightly with transitions. Improved with visual schedule.' },
@@ -37,7 +39,10 @@ const TeacherStudentProfileScreen = ({ route }: any) => {
             )}
             <View style={styles.flexOne}>
               <Text style={styles.title}>{student.name}</Text>
-              <Text style={styles.subtitle}>Grade • 4  |  Room • 202</Text>
+              <Text style={styles.subtitle}>
+                {student.age ? `Age: ${student.age}` : ''}
+                {student.disorder ? `  |  ${student.disorder}` : ''}
+              </Text>
             </View>
             <Pressable style={styles.iconBtn}>
               <Icon name="dots-horizontal" size={20} color={palette.muted} />

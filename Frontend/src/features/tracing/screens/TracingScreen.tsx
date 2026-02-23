@@ -185,6 +185,7 @@ import { getNumberPath } from '../constants/NumberPaths';
 import { getShapePath } from '../constants/ShapePaths';
 import { parseSVGPath, validateTracing } from '../utils/tracingValidator';
 import { saveProgress } from '../storage/progressStore';
+import { addPoints } from '../../activities/store/pointsStore';
 import { TRACING_THRESHOLD, ALPHABET } from '../constants/Alphabet';
 import { NUMBERS } from '../constants/Numbers';
 import { SHAPES } from '../constants/Shapes';
@@ -262,6 +263,12 @@ export const TracingScreen: React.FC<TracingScreenProps> = ({
           const earnedStars = accuracy >= 0.9 ? 4 : 3;
 
           setStars(earnedStars);
+
+          // Award points: 4 stars = +20, 3 stars = +10
+          const pointsEarned = earnedStars >= 4 ? 20 : 10;
+          addPoints(pointsEarned).catch((err) =>
+            console.log('Points error', err)
+          );
 
           // Save progress with category support
           saveProgress(category, item, earnedStars).catch((err) =>

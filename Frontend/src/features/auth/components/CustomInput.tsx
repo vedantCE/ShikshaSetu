@@ -7,6 +7,7 @@ interface CustomInputProps extends TextInputProps {
   icon?: string;
   rightIcon?: string;
   onRightIconPress?: () => void;
+  error?: string;
 }
 
 export const CustomInput: React.FC<CustomInputProps> = ({
@@ -15,12 +16,13 @@ export const CustomInput: React.FC<CustomInputProps> = ({
   rightIcon,
   onRightIconPress,
   style,
+  error,
   ...props
 }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      <View style={styles.inputWrapper}>
+      <View style={[styles.inputWrapper, error ? styles.inputError : null]}>
         <TextInput
           style={[styles.input, style]}
           placeholderTextColor="#A0A0A0"
@@ -36,6 +38,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({
           />
         )}
       </View>
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </View>
   );
 };
@@ -67,5 +70,13 @@ const styles = StyleSheet.create({
   },
   rightIcon: {
     marginLeft: 10,
+  },
+  inputError: {
+    borderColor: '#E03131',
+  },
+  errorText: {
+    color: '#E03131',
+    fontSize: 12,
+    marginTop: 6,
   },
 });

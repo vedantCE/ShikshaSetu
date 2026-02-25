@@ -49,7 +49,7 @@ const API_BASE_URL =
     (DEV_HOST
         ? `http://${DEV_HOST}:5001`
         : Platform.OS === 'android'
-            ? 'http://10.0.2.2:5001'
+            ? 'http://10.12.138.65:5001'
             : 'http://localhost:5001');
 
 async function authedRequest<T>(

@@ -17,6 +17,7 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [address, setAddress] = useState('');
   const [contactNumber, setContactNumber] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [secureText, setSecureText] = useState(true);
   const [secureTextConfirm, setSecureTextConfirm] = useState(true);
   const [rememberMe, setRememberMe] = useState(false); // only used in login
@@ -25,23 +26,7 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    if (isSignup) {
-      // Signup validation
-      if (!email || !password || !confirmPassword || !address || !contactNumber) {
-        Alert.alert('Error', 'Please fill all fields');
-        return;
-      }
-      if (password !== confirmPassword) {
-        Alert.alert('Error', 'Passwords do not match');
-        return;
-      }
-    } else {
-      // Login validation
-      if (!email || !password) {
-        Alert.alert('Error', 'Please enter email and password');
-        return;
-      }
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
     try {
@@ -57,13 +42,12 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
           user_role: 'teacher',
         });
 
-        await login({
+        login({
           user_id: response.user_id,
           role: response.user_role,
           email,
           token: response.token,
           name: response.user_name,
-          rememberMe,
         });
         Alert.alert('Success', 'Teacher account created!');
         navigation.replace('TeacherDashboard');
@@ -73,13 +57,12 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
           user_password: password,
         });
 
-        await login({
+        login({
           user_id: response.user_id,
           role: response.user_role,
           email,
           token: response.token,
           name: response.user_name,
-          rememberMe,
         });
         navigation.replace('TeacherDashboard');
       }
@@ -90,6 +73,39 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
     }
   };
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const validateForm = () => {
+    const vErrors: Record<string, string> = {};
+
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) vErrors.email = 'Email is required';
+    else if (!emailRegex.test(trimmedEmail)) vErrors.email = 'Enter a valid email address';
+
+    if (!isSignup) {
+      if (!password) vErrors.password = 'Password is required';
+      else if (password.length < 6) vErrors.password = 'Password must be at least 6 characters';
+    } else {
+      if (!address || address.trim().length < 5) vErrors.address = 'Address must be at least 5 characters';
+
+      const digitsOnly = contactNumber.replace(/\D/g, '');
+      if (!contactNumber) vErrors.contactNumber = 'Contact number is required';
+      else if (!/^[0-9]+$/.test(digitsOnly)) vErrors.contactNumber = 'Contact number must contain digits only';
+      else if (digitsOnly.length < 10 || digitsOnly.length > 15) vErrors.contactNumber = 'Contact must be 10-15 digits';
+
+      if (!password) vErrors.password = 'Password is required';
+      else if (password.length < 6) vErrors.password = 'Password must be at least 6 characters';
+
+      if (!confirmPassword) vErrors.confirmPassword = 'Confirm password is required';
+      else if (confirmPassword !== password) vErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    if (trimmedEmail !== email) setEmail(trimmedEmail);
+
+    setErrors(vErrors);
+    return Object.keys(vErrors).length === 0;
+  };
+
   const handleTabChange = (tab: 'login' | 'signup') => {
     setIsSignup(tab === 'signup');
     // Clear signup-only fields when switching (improves UX)
@@ -97,6 +113,7 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
     setContactNumber('');
     setConfirmPassword('');
     setPassword('');
+    setErrors({});
   };
 
   // Conditional footer (only show on login)
@@ -113,7 +130,7 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
         />
         <Text style={{ fontSize: 14, color: '#808080', fontWeight: '500' }}>Remember Me</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+      <TouchableOpacity>
         <Text style={{ fontSize: 14, color: '#1B337F', fontWeight: '700' }}>Forgot Password?</Text>
       </TouchableOpacity>
     </View>
@@ -135,9 +152,11 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
         label="Email"
         placeholder="teacher@example.com"
         value={email}
-        onChangeText={setEmail}
+        onChangeText={(text) => { const cleaned = text.replace(/\s/g, ''); setEmail(cleaned); setErrors((p) => { const c = { ...p }; delete c.email; return c; }); }}
+        onBlur={() => validateForm()}
         keyboardType="email-address"
         autoCapitalize="none"
+        error={errors.email}
       />
 
       {/* Signup-only fields */}
@@ -147,14 +166,18 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
             label="Address"
             placeholder="Enter your address"
             value={address}
-            onChangeText={setAddress}
+            onChangeText={(t) => { setAddress(t); setErrors((p) => { const c = { ...p }; delete c.address; return c; }); }}
+            onBlur={() => validateForm()}
+            error={errors.address}
           />
           <CustomInput
             label="Contact Number"
             placeholder="Enter contact number"
             value={contactNumber}
-            onChangeText={setContactNumber}
+            onChangeText={(t) => { const digits = t.replace(/\D/g, ''); setContactNumber(digits); setErrors((p) => { const c = { ...p }; delete c.contactNumber; return c; }); }}
+            onBlur={() => validateForm()}
             keyboardType="phone-pad"
+            error={errors.contactNumber}
           />
         </>
       )}
@@ -164,10 +187,12 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
         label="Password"
         placeholder="xxxxxxxx"
         value={password}
-        onChangeText={setPassword}
+        onChangeText={(t) => { setPassword(t); setErrors((p) => { const c = { ...p }; delete c.password; return c; }); }}
+        onBlur={() => validateForm()}
         secureTextEntry={secureText}
         rightIcon={secureText ? "eye-off-outline" : "eye-outline"}
         onRightIconPress={() => setSecureText(!secureText)}
+        error={errors.password}
       />
 
       {/* Confirm password – only on signup */}
@@ -176,10 +201,12 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
           label="Confirm Password"
           placeholder="xxxxxxxx"
           value={confirmPassword}
-          onChangeText={setConfirmPassword}
+          onChangeText={(t) => { setConfirmPassword(t); setErrors((p) => { const c = { ...p }; delete c.confirmPassword; return c; }); }}
+          onBlur={() => validateForm()}
           secureTextEntry={secureTextConfirm}
           rightIcon={secureTextConfirm ? "eye-off-outline" : "eye-outline"}
           onRightIconPress={() => setSecureTextConfirm(!secureTextConfirm)}
+          error={errors.confirmPassword}
         />
       )}
 

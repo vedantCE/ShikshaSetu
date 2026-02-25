@@ -6,7 +6,9 @@ import { useAuth } from '../features/auth/context/AuthContext';
 import { AuthProvider } from '../features/auth/context/AuthContext';
 
 // Existing screens
-import { HomeScreen } from '../features/dashboard/screens/HomeScreen';
+// import { HomeScreen } from '../features/dashboard/screens/HomeScreen';
+import { OnboardingScreen } from '../features/dashboard/screens/OnboardingScreen';
+import { ModeSelectionScreen } from '../features/dashboard/screens/ModeSelectionScreen';
 import VideoSplashScreen from '../features/splash/screens/VideoSplashScreen';
 import { TeacherAuthScreen } from '../features/auth/screens/TeacherAuthScreen';
 import { ParentAuthScreen } from '../features/auth/screens/ParentAuthScreen';
@@ -33,13 +35,15 @@ import DifficultySelectScreen from '../features/tugofwar/screens/DifficultySelec
 import TugOfWarScreen from '../features/tugofwar/screens/TugOfWarScreen';
 import TugOfWarResultScreen from '../features/tugofwar/screens/TugOfWarResultScreen';
 // Assessment Quiz screens
-import { HomeScreen as AssessmentQuizHomeScreen } from '../features/quiz/screens/HomeScreen';
+// import { HomeScreen as AssessmentQuizHomeScreen } from '../features/quiz/screens/HomeScreen';
 import { QuizScreen as AssessmentQuizScreen } from '../features/quiz/screens/QuizScreen';
 import { ResultScreen as AssessmentResultScreen } from '../features/quiz/screens/ResultScreen';
 import type { ResultCategory, QuizScores } from '../features/quiz/types/quiz_types';
 
 export type RootStackParamList = {
   Splash: undefined;
+  Onboarding: undefined;
+  ModeSelection: undefined;
   Landing: undefined;
   ForgotPassword: undefined;
   ParentAuth: undefined;
@@ -77,7 +81,7 @@ const SplashScreenWrapper = ({ navigation }: any) => {
       onVideoEnd={() => {
         navigation.reset({
           index: 0,
-          routes: [{ name: 'Landing' }],
+          routes: [{ name: 'Onboarding' }],
         });
       }}
     />
@@ -185,14 +189,14 @@ const AppNavigator = () => {
             options={{ headerShown: false }}
           />
           {/* Assessment Quiz Screens */}
-          <Stack.Screen
+          {/* <Stack.Screen
             name="AssessmentQuizHome"
             component={AssessmentQuizHomeScreen}
             options={{
               title: 'Disorder Assessment',
               headerShown: true
             }}
-          />
+          /> */}
           <Stack.Screen
             name="AssessmentQuiz"
             component={AssessmentQuizScreen}
@@ -215,11 +219,11 @@ const AppNavigator = () => {
             component={SplashScreenWrapper}
             options={{ headerShown: false }}
           />
-          <Stack.Screen
+          {/* <Stack.Screen
             name="Landing"
             component={HomeScreen}
             options={{ headerShown: false }}
-          />
+          /> */}
 
           {/* Parent flow */}
           <Stack.Screen
@@ -232,6 +236,18 @@ const AppNavigator = () => {
           <Stack.Screen
             name="TeacherAuth"
             component={TeacherAuthScreen}
+            options={{ headerShown: false }}
+          />
+
+          {/* Onboarding & Mode Selection */}
+          <Stack.Screen
+            name="Onboarding"
+            component={OnboardingScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ModeSelection"
+            component={ModeSelectionScreen}
             options={{ headerShown: false }}
           />
 

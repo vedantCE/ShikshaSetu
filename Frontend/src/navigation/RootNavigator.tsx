@@ -35,7 +35,7 @@ import DifficultySelectScreen from '../features/tugofwar/screens/DifficultySelec
 import TugOfWarScreen from '../features/tugofwar/screens/TugOfWarScreen';
 import TugOfWarResultScreen from '../features/tugofwar/screens/TugOfWarResultScreen';
 // Assessment Quiz screens
-// import { HomeScreen as AssessmentQuizHomeScreen } from '../features/quiz/screens/HomeScreen';
+import { HomeScreen as AssessmentQuizHomeScreen } from '../features/quiz/screens/HomeScreen';
 import { QuizScreen as AssessmentQuizScreen } from '../features/quiz/screens/QuizScreen';
 import { ResultScreen as AssessmentResultScreen } from '../features/quiz/screens/ResultScreen';
 import type { ResultCategory, QuizScores } from '../features/quiz/types/quiz_types';
@@ -189,14 +189,14 @@ const AppNavigator = () => {
             options={{ headerShown: false }}
           />
           {/* Assessment Quiz Screens */}
-          {/* <Stack.Screen
+          <Stack.Screen
             name="AssessmentQuizHome"
             component={AssessmentQuizHomeScreen}
             options={{
               title: 'Disorder Assessment',
               headerShown: true
             }}
-          /> */}
+          />
           <Stack.Screen
             name="AssessmentQuiz"
             component={AssessmentQuizScreen}

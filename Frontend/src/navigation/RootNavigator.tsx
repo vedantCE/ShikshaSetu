@@ -40,6 +40,12 @@ import { QuizScreen as AssessmentQuizScreen } from '../features/quiz/screens/Qui
 import { ResultScreen as AssessmentResultScreen } from '../features/quiz/screens/ResultScreen';
 import type { ResultCategory, QuizScores } from '../features/quiz/types/quiz_types';
 
+// Object3D screens
+import Object3DHomeScreen from '../features/object3d/screens/Object3DHomeScreen';
+import Object3DDetailScreen from '../features/object3d/screens/Object3DDetailScreen';
+import Object3DOnboardingScreen from '../features/object3d/screens/Object3DOnboardingScreen';
+import type { ObjectItem } from '../features/object3d/constants/data';
+
 export type RootStackParamList = {
   Splash: undefined;
   Onboarding: undefined;
@@ -71,6 +77,10 @@ export type RootStackParamList = {
     duration: number;
     difficulty: string;
   };
+  // Object3D routes
+  Object3DHome: { filterFavorite?: boolean };
+  Object3DDetail: { item: ObjectItem };
+  Object3DOnboarding: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -209,6 +219,22 @@ const AppNavigator = () => {
               title: 'Assessment Result',
               headerShown: false
             }}
+          />
+          {/* Object3D Screens */}
+          <Stack.Screen
+            name="Object3DHome"
+            component={Object3DHomeScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Object3DDetail"
+            component={Object3DDetailScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Object3DOnboarding"
+            component={Object3DOnboardingScreen}
+            options={{ headerShown: false }}
           />
         </>
       ) : (

@@ -243,6 +243,31 @@ export const ActivityHubScreen = ({ navigation }: Props) => {
           </ScalePressable>
         </Animated.View>
 
+        {/* 4.6️⃣ 3D LEARNING CARD */}
+        <Animated.View entering={ZoomIn.delay(700).springify()}>
+          <ScalePressable
+            onPress={() => navigation.navigate('Object3DHome' as any)}
+            style={styles.puzzleCard}
+          >
+            <LinearGradient
+              colors={['#EDE9FE', '#DDD6FE']}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+              style={styles.puzzleGradient}
+            >
+              <View style={styles.puzzleContent}>
+                <View>
+                  <Text style={styles.puzzleTitle}>3D Learning</Text>
+                  <Text style={styles.puzzleSubtitle}>Explore 3D Objects & Learn</Text>
+                </View>
+                <View style={[styles.playButtonProps, { backgroundColor: '#7C3AED' }]}>
+                  <Text style={styles.playButtonText}>Explore</Text>
+                  <Icon name="cube-outline" size={20} color="#FFF" />
+                </View>
+              </View>
+            </LinearGradient>
+          </ScalePressable>
+        </Animated.View>
+
         {/* 5️⃣ STORIES SECTION */}
         <Animated.View entering={FadeInUp.delay(700).springify()} style={styles.storiesSection}>
           <View style={styles.storiesHeader}>

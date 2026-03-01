@@ -24,49 +24,77 @@
 
 
 import 'react-native-gesture-handler';
-import React, { useEffect } from 'react';
-import { StatusBar } from 'react-native';  // Keep this for controlling status bar
+import React, { useEffect, useState } from 'react';
+import { StatusBar, View, ActivityIndicator } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import SystemNavigationBar from 'react-native-system-navigation-bar';  // NEW: Import the library
+import SystemNavigationBar from 'react-native-system-navigation-bar';
 import { RootNavigator } from '../navigation/RootNavigator';
 import { initializeProgress } from '../features/tracing/storage/progressStore';
 
 function App() {
-  useEffect(() => {
-    // Existing: Initialize your progress
-    initializeProgress().catch(error => {
-      console.error('Failed to initialize progress:', error);
-    });
+  const [isInitialized, setIsInitialized] = useState(false);
 
-    // NEW: Set up immersive sticky mode
-    const setupImmersive = async () => {
+  useEffect(() => {
+    const initApp = async () => {
       try {
-        // Hide status bar completely
-        StatusBar.setHidden(true);
-        
-        // Optional: Set style for when bars appear temporarily (dark icons on light background)
-        StatusBar.setBarStyle('dark-content');
-        
-        // Enable sticky immersive mode (bars hidden, show on swipe, auto-hide)
-        await SystemNavigationBar.stickyImmersive();
+        // Initialize progress storage
+        await initializeProgress().catch(error => {
+          console.error('App: Failed to initialize progress:', error);
+        });
+
+        // Set up immersive sticky mode
+        try {
+          StatusBar.setHidden(true);
+          StatusBar.setBarStyle('dark-content');
+          if (SystemNavigationBar && typeof SystemNavigationBar.stickyImmersive === 'function') {
+            await SystemNavigationBar.stickyImmersive();
+          }
+        } catch (error) {
+          console.error('App: Failed to set immersive mode:', error);
+        }
+
+        // Add a small delay to ensure everything is settled
+        setIsInitialized(true);
       } catch (error) {
-        console.error('Failed to set immersive mode:', error);
+        console.error('App: Critical initialization error:', error);
+        setIsInitialized(true); // Still try to render even on error
       }
     };
 
-    setupImmersive();
+    initApp();
 
-    // Optional cleanup: Restore normal bars when app closes (rarely needed, but good practice)
     return () => {
-      StatusBar.setHidden(false);
-      SystemNavigationBar.lowProfile();  // Restores normal navigation bar behavior
+      try {
+        StatusBar.setHidden(false);
+        if (SystemNavigationBar && typeof SystemNavigationBar.lowProfile === 'function') {
+          SystemNavigationBar.lowProfile();
+        }
+      } catch (e) {
+        // Ignore cleanup errors
+      }
     };
   }, []);
 
+  if (!isInitialized) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F7F8FA' }}>
+        <ActivityIndicator size="large" color="#1B337F" />
+      </View>
+    );
+  }
+
+  // Final safety check for RootNavigator
+  if (!RootNavigator) {
+    console.error('App: RootNavigator is undefined. Check for circular dependencies or export errors.');
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="red" />
+      </View>
+    );
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      {/* REMOVED: <StatusBar barStyle="dark-content" /> 
-          We now control it imperatively with setHidden(true) for full hide */}
       <RootNavigator />
     </GestureHandlerRootView>
   );

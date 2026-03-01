@@ -20,6 +20,7 @@ import Animated, {
     withDelay,
     FadeInDown,
 } from 'react-native-reanimated';
+
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigation/RootNavigator';
 
@@ -46,34 +47,34 @@ const features: FeatureItem[] = [
         subtitle: 'Learn to draw shapes',
         image: require('../assets/Activityhub/shapes.png'),
         screen: 'ShapeGrid',
-        color: '#FFD166',
+        color: '#E3F2FD',
         locked: false,
     },
     {
         id: '2',
-        title: 'Logic Puzzles',
-        subtitle: 'Boost your brain power',
-        image: require('../assets/Activityhub/number.jpg'), // Placeholder
-        screen: null,
-        color: '#06D6A0',
-        locked: true,
+        title: '3D Learning',
+        subtitle: 'Explore 3D Objects',
+        image: require('../assets/Activityhub/more_icon.png'), // Using existing more_icon as placeholder
+        screen: 'Object3DHome',
+        color: '#EDE9FE',
+        locked: false,
     },
     {
         id: '3',
-        title: 'Color Mixing',
-        subtitle: 'Discover new colors',
-        image: require('../assets/Activityhub/talking.png'), // Placeholder
+        title: 'Logic Puzzles',
+        subtitle: 'Boost your brain',
+        image: require('../assets/Activityhub/numbers_icon.png'), // Placeholder
         screen: null,
-        color: '#EF476F',
+        color: '#FFEBEE',
         locked: true,
     },
     {
         id: '4',
-        title: 'Story Time',
-        subtitle: 'Listen to amazing stories',
-        image: require('../assets/Activityhub/stories.png'),
+        title: 'Color Mixing',
+        subtitle: 'Discover colors',
+        image: require('../assets/Activityhub/alphabets_icon.png'), // Placeholder
         screen: null,
-        color: '#118AB2',
+        color: '#FFF3E0',
         locked: true,
     },
 ];
@@ -96,51 +97,34 @@ const FeatureCard = ({ item, index, navigation }: { item: FeatureItem; index: nu
     return (
         <Animated.View
             entering={FadeInDown.delay(index * 100).springify()}
-            style={[styles.cardContainer, animatedStyle]}
+            style={[styles.featureWrapper, animatedStyle]}
         >
             <Pressable
                 onPress={() => {
                     if (!item.locked && item.screen) {
-                        navigation.navigate(item.screen);
+                        navigation.navigate(item.screen as any);
                     }
                 }}
                 onPressIn={handlePressIn}
                 onPressOut={handlePressOut}
-                style={[styles.card, { backgroundColor: item.color }]}
+                style={[styles.featureCard, { backgroundColor: item.color }]}
             >
-                <LinearGradient
-                    colors={['rgba(255,255,255,0.3)', 'rgba(255,255,255,0)']}
-                    style={styles.gradientOverlay}
-                />
-
-                <View style={styles.cardContent}>
-                    <View style={styles.textContainer}>
-                        <Text style={styles.cardTitle}>{item.title}</Text>
-                        <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
-                    </View>
-                    <Image source={item.image} style={styles.cardImage} resizeMode="contain" />
-                </View>
-
+                <Image source={item.image} style={styles.featureIcon} resizeMode="contain" />
                 {item.locked && (
                     <View style={styles.lockedOverlay}>
-                        <Icon name="lock" size={32} color="#FFF" />
+                        <Icon name="lock" size={24} color="rgba(0,0,0,0.3)" />
                     </View>
                 )}
             </Pressable>
+            <Text style={styles.featureTitle} numberOfLines={1}>{item.title}</Text>
         </Animated.View>
     );
 };
 
+
 export const MoreFeaturesScreen = ({ navigation }: Props) => {
     return (
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-            <View style={styles.header}>
-                <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Icon name="arrow-left" size={28} color="#333" />
-                </Pressable>
-                <Text style={styles.headerTitle}>More Activites</Text>
-                <View style={{ width: 28 }} />
-            </View>
 
             <FlatList
                 data={features}
@@ -148,6 +132,8 @@ export const MoreFeaturesScreen = ({ navigation }: Props) => {
                     <FeatureCard item={item} index={index} navigation={navigation} />
                 )}
                 keyExtractor={(item) => item.id}
+                numColumns={3}
+                columnWrapperStyle={styles.row}
                 contentContainerStyle={styles.listContent}
                 showsVerticalScrollIndicator={false}
             />
@@ -158,14 +144,14 @@ export const MoreFeaturesScreen = ({ navigation }: Props) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F8F9FA',
+        backgroundColor: '#F7F8FA',
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
     },
     backButton: {
         padding: 8,
@@ -178,60 +164,52 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
     },
     headerTitle: {
-        fontSize: 22,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#333',
     },
     listContent: {
-        padding: 20,
+        paddingHorizontal: 10,
+        paddingTop: 10,
         paddingBottom: 40,
     },
-    cardContainer: {
+    row: {
+        justifyContent: 'flex-start',
+        gap: 10,
         marginBottom: 20,
-        borderRadius: 24,
+    },
+    featureWrapper: {
+        alignItems: 'center',
+        width: (width - 40) / 3, // Match ActivityHub spacing
+    },
+    featureCard: {
+        width: '100%',
+        aspectRatio: 1,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 8,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.05,
         shadowRadius: 8,
-        elevation: 5,
-    },
-    card: {
-        height: 120,
-        borderRadius: 24,
+        elevation: 3,
         overflow: 'hidden',
-        justifyContent: 'center',
     },
-    gradientOverlay: {
-        ...StyleSheet.absoluteFillObject,
+    featureIcon: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 22,
     },
-    cardContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 24,
-    },
-    textContainer: {
-        flex: 1,
-        marginRight: 16,
-    },
-    cardTitle: {
-        fontSize: 20,
-        fontWeight: '800',
-        color: '#FFF',
-        marginBottom: 4,
-    },
-    cardSubtitle: {
+    featureTitle: {
         fontSize: 14,
-        color: 'rgba(255,255,255,0.9)',
-        fontWeight: '500',
-    },
-    cardImage: {
-        width: 80,
-        height: 80,
+        fontWeight: '600',
+        color: '#333',
+        textAlign: 'center',
     },
     lockedOverlay: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0,0,0,0.3)',
+        backgroundColor: 'rgba(255,255,255,0.4)',
         justifyContent: 'center',
         alignItems: 'center',
     },

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { fetchChildren } from '../services/studentApi';
 
 type Role = 'parent' | 'teacher';
 type AuthenticatedUser = {
@@ -72,9 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (userData) {
         const parsed = JSON.parse(userData);
 
-        // Simple manual validation for expiry (assuming an 'exp' field is stored or calculated)
-        // If standard JWT is used without 'exp' in parsed, we just log them in until 401 occurs natively.
-        // As per requirements: "validate expiration"
+        // Validate expiry — if exp field exists, check it
         let isExpired = false;
         if (parsed.exp && Date.now() >= parsed.exp * 1000) {
           isExpired = true;
@@ -82,6 +81,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         if (!isExpired) {
           setUser(parsed);
+
+          // ─── ISSUE 1 FIX: Rehydrate children from backend on every app startup ──
+          // Without this, students[] was always [] after a restart because addStudent()
+          // only updates in-memory state — children were never fetched back from the DB.
+          if (parsed.role === 'parent' && parsed.token) {
+            try {
+              const childrenFromServer = await fetchChildren(parsed.token);
+              const mapped: Student[] = childrenFromServer.map((c) => ({
+                id: String(c.student_id),
+                name: c.student_name,
+                age: c.age,
+                disorder: c.disorder_type,
+                avatar: c.image_url ?? undefined,
+              }));
+              setStudentsState(mapped);
+            } catch (fetchErr) {
+              // Network failure must not block auth — user is still logged in,
+              // they just won't see children until connectivity is restored.
+              console.warn('AuthContext: Could not fetch children on startup:', fetchErr);
+            }
+          }
+          // ─────────────────────────────────────────────────────────────────────────
         } else {
           await AsyncStorage.removeItem('@auth_user');
         }
@@ -105,13 +126,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(userData);
 
     if (rememberMe) {
-      // Decode JWT roughly to find exp if possible, otherwise set manual 30 days
-      let exp = Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60);
-      try {
-        const payloadBase64 = token.split('.')[1];
-        // Use basic base64 decode if needed, or skip detailed JWT validation if no atob
-        // For simplicity and stability without extra libs, rely on backend rejection or basic date math
-      } catch (e) { }
+      // Set token expiry to 30 days from now
+      const exp = Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60);
       await AsyncStorage.setItem('@auth_user', JSON.stringify({ ...userData, exp }));
     }
   };

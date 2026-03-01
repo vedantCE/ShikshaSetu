@@ -20,10 +20,7 @@ const ParentDashboardScreen = ({ navigation }: any) => {
   const { user, students, selectStudent } = useAuth();
 
   const showProfile = () => {
-    Alert.alert(
-      'Parent Profile',
-      `Name: ${user?.name || 'Parent'}\nEmail: ${user?.email || 'parent@example.com'}\nContact: +91 98765 43210\nAddress: Ahmedabad, Gujarat`
-    );
+    navigation.navigate('ParentMain');
   };
 
   return (

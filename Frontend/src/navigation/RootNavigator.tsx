@@ -1,12 +1,11 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 import { useAuth } from '../features/auth/context/AuthContext';
 import { AuthProvider } from '../features/auth/context/AuthContext';
 
 // Existing screens
-// import { HomeScreen } from '../features/dashboard/screens/HomeScreen';
 import { OnboardingScreen } from '../features/dashboard/screens/OnboardingScreen';
 import { ModeSelectionScreen } from '../features/dashboard/screens/ModeSelectionScreen';
 import VideoSplashScreen from '../features/splash/screens/VideoSplashScreen';
@@ -17,6 +16,7 @@ import { ForgotPasswordScreen } from '../features/auth/screens/ForgotPasswordScr
 // New dashboard screens
 import ParentDashboardScreenScreen from '../features/dashboard/screens/ParentDashboardScreen';
 import TeacherModuleNavigator from './TeacherModuleNavigator';
+import ParentModuleNavigator from './ParentModuleNavigator';          // ← added back
 
 // Add student/child screens
 import TeacherAddStudentScreen from '../features/students/screens/TeacherAddStudentScreen';
@@ -24,7 +24,6 @@ import ParentAddChildScreen from '../features/students/screens/ParentAddChildScr
 
 // Activity screens
 import { ActivityHubScreen } from '../features/activities/screens/ActivityHubScreen';
-// removed unused QuizScreen import
 import { LetterGridScreen } from '../features/tracing/screens/LetterGridScreen';
 import { TracingScreen } from '../features/tracing/screens/TracingScreen';
 import { NumberGridScreen } from '../features/tracing/screens/NumberGridScreen';
@@ -34,6 +33,7 @@ import AnalyticsScreen from '../features/dashboard/screens/AnalyticsScreen';
 import DifficultySelectScreen from '../features/tugofwar/screens/DifficultySelectScreen';
 import TugOfWarScreen from '../features/tugofwar/screens/TugOfWarScreen';
 import TugOfWarResultScreen from '../features/tugofwar/screens/TugOfWarResultScreen';
+
 // Assessment Quiz screens
 import { HomeScreen as AssessmentQuizHomeScreen } from '../features/quiz/screens/HomeScreen';
 import { QuizScreen as AssessmentQuizScreen } from '../features/quiz/screens/QuizScreen';
@@ -46,6 +46,8 @@ import Object3DDetailScreen from '../features/object3d/screens/Object3DDetailScr
 import Object3DOnboardingScreen from '../features/object3d/screens/Object3DOnboardingScreen';
 import type { ObjectItem } from '../features/object3d/constants/data';
 
+import ChildProgressScreen from '../features/dashboard/screens/ChildProgressScreen';   
+
 export type RootStackParamList = {
   Splash: undefined;
   Onboarding: undefined;
@@ -55,6 +57,8 @@ export type RootStackParamList = {
   ParentAuth: undefined;
   TeacherAuth: undefined;
   ParentDashboardScreen: undefined;
+  ParentMain: undefined;                    // ← added back
+  ChildProgress: { childId: string };       // ← added back (was in old code)
   TeacherDashboard: undefined;
   ParentAddChild: undefined;
   TeacherAddStudent: undefined;
@@ -129,6 +133,16 @@ const AppNavigator = () => {
                 options={{ headerShown: false }}
               />
               <Stack.Screen
+                name="ParentMain"
+                component={ParentModuleNavigator}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="ChildProgress"
+                component={ChildProgressScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
                 name="ParentAddChild"
                 component={ParentAddChildScreen}
               />
@@ -198,6 +212,7 @@ const AppNavigator = () => {
             component={TugOfWarResultScreen}
             options={{ headerShown: false }}
           />
+
           {/* Assessment Quiz Screens */}
           <Stack.Screen
             name="AssessmentQuizHome"
@@ -220,6 +235,7 @@ const AppNavigator = () => {
               headerShown: false
             }}
           />
+
           {/* Object3D Screens */}
           <Stack.Screen
             name="Object3DHome"
@@ -245,27 +261,19 @@ const AppNavigator = () => {
             component={SplashScreenWrapper}
             options={{ headerShown: false }}
           />
-          {/* <Stack.Screen
-            name="Landing"
-            component={HomeScreen}
-            options={{ headerShown: false }}
-          /> */}
 
-          {/* Parent flow */}
           <Stack.Screen
             name="ParentAuth"
             component={ParentAuthScreen}
             options={{ headerShown: false }}
           />
 
-          {/* Teacher flow */}
           <Stack.Screen
             name="TeacherAuth"
             component={TeacherAuthScreen}
             options={{ headerShown: false }}
           />
 
-          {/* Onboarding & Mode Selection */}
           <Stack.Screen
             name="Onboarding"
             component={OnboardingScreen}
@@ -277,13 +285,11 @@ const AppNavigator = () => {
             options={{ headerShown: false }}
           />
 
-          {/* Forgot Password */}
           <Stack.Screen
             name="ForgotPassword"
             component={ForgotPasswordScreen}
             options={{ headerShown: false }}
           />
-
         </>
       )}
     </Stack.Navigator>

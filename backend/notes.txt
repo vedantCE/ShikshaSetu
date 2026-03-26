@@ -1,0 +1,14 @@
+About JWT Info:
+ jwt.sign(payload, secret, options)
+        payload = data stored inside the token { user_id, user_role }
+        JWT_SECRET = a secret key from your .env file used to sign/verify the token
+        expiresIn: '7d' = token expires in 7 days
+        This token is like a key — user sends it with every request
+
+NOW() = PostgreSQL function — saves current timestamp
+
+
+Tug of war edge case : when timer 0 an user submit ans
+// Edge case prevention: Prevent submitting answers after game ends Could happen if player submits just as timer hits 0
+    if (game.status !== 'active')
+        throw new AppError('Game is already finished', 400);

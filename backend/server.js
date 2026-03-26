@@ -5,6 +5,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const tugOfWarRoutes = require('./routes/tugOfWarRoutes');
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
@@ -18,6 +19,8 @@ app.use('/tugofwar', tugOfWarRoutes);
 app.get('/', (req, res) => {
   res.json({ message: 'ShikshaSetu Backend API' });
 });
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

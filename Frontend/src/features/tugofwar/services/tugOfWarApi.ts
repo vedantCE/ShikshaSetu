@@ -1,11 +1,6 @@
-import { NativeModules, Platform } from 'react-native';
+import { authedRequest } from '../../../api/apiClient';
 
-declare const process: {
-    env: {
-        EXPO_PUBLIC_API_URL?: string;
-    };
-};
-
+//Types 
 export type StartGameResponse = {
     gameId: number;
     difficulty: string;
@@ -33,77 +28,27 @@ export type EndGameResponse = {
     correct_team2: number;
 };
 
-const DEV_HOST = (() => {
-    const scriptURL = NativeModules?.SourceCode?.scriptURL as string | undefined;
-    if (scriptURL) {
-        const match = scriptURL.match(/^https?:\/\/([^:/]+)(?::\d+)?\//);
-        if (match?.[1]) {
-            return match[1];
-        }
-    }
-    return null;
-})();
-
-const API_BASE_URL =
-    process.env.EXPO_PUBLIC_API_URL ||
-    (DEV_HOST
-        ? `http://${DEV_HOST}:5001`
-        : Platform.OS === 'android'
-            ? 'http://10.12.138.65:5001'
-            : 'http://localhost:5001');
-
-async function authedRequest<T>(
-    token: string,
-    path: string,
-    method: 'GET' | 'POST',
-    payload?: unknown
-): Promise<T> {
-    let response: Response;
-    try {
-        response = await fetch(`${API_BASE_URL}${path}`, {
-            method,
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-            body: payload ? JSON.stringify(payload) : undefined,
-        });
-    } catch {
-        throw new Error(`Cannot reach server at ${API_BASE_URL}. Check backend.`);
-    }
-
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-        throw new Error(data?.error || `Request failed with status ${response.status}`);
-    }
-    return data as T;
-}
-
+//Functions
 export function startGame(token: string, difficulty: string) {
-    return authedRequest<StartGameResponse>(token, '/tugofwar/start', 'POST', { difficulty });
+    return authedRequest<StartGameResponse>(
+        token, '/tugofwar/start', 'POST', { difficulty }
+    );
 }
 
-export function submitAnswer(token: string, gameId: number, team: string, answer: number) {
-    return authedRequest<SubmitAnswerResponse>(token, '/tugofwar/submit', 'POST', {
-        gameId,
-        team,
-        answer,
-    });
+export function submitAnswer(
+    token: string, gameId: number, team: string, answer: number
+) {
+    return authedRequest<SubmitAnswerResponse>(
+        token, '/tugofwar/submit', 'POST', { gameId, team, answer }
+    );
 }
 
 export function endGame(
-    token: string,
-    gameId: number,
-    team1Score: number,
-    team2Score: number,
-    winner: string,
-    duration: number
+    token: string, gameId: number, team1Score: number,
+    team2Score: number, winner: string, duration: number
 ) {
-    return authedRequest<EndGameResponse>(token, '/tugofwar/end', 'POST', {
-        gameId,
-        team1Score,
-        team2Score,
-        winner,
-        duration,
-    });
+    return authedRequest<EndGameResponse>(
+        token, '/tugofwar/end', 'POST',
+        { gameId, team1Score, team2Score, winner, duration }
+    );
 }

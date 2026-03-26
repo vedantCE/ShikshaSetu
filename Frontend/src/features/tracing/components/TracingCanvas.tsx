@@ -2,7 +2,10 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Svg, { Path } from 'react-native-svg';
+import LottieView from 'lottie-react-native';
 import Animated, {
+  useAnimatedStyle,
+  withTiming,
   useSharedValue,
   useAnimatedProps,
   runOnJS,
@@ -96,6 +99,9 @@ export const TracingCanvas: React.FC<TracingCanvasProps> = ({
   // Store points as array instead of string (memory efficient)
   const points = useSharedValue<Point[]>([]);
   const frameCount = useSharedValue(0);
+  const cursorX = useSharedValue(0);
+  const cursorY = useSharedValue(0);
+  const cursorVisible = useSharedValue(0);
 
   // Convert points array to SVG path string only when rendering
   const animatedProps = useAnimatedProps(() => {
@@ -105,16 +111,29 @@ export const TracingCanvas: React.FC<TracingCanvasProps> = ({
     };
   });
 
+  const cursorStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: cursorX.value - 50 },
+      { translateY: cursorY.value - 50 },
+    ],
+    opacity: cursorVisible.value,
+  }));
+
   const pan = Gesture.Pan()
     .onStart(e => {
       'worklet';
       points.value = [{ x: e.x, y: e.y }];
       frameCount.value = 0;
+      cursorX.value = e.x;
+      cursorY.value = e.y;
+      cursorVisible.value = withTiming(1, { duration: 120 });
     })
     .onUpdate(e => {
       'worklet';
       // Throttle: only update every 3rd frame to reduce worklet calls
       frameCount.value += 1;
+      cursorX.value = e.x;
+      cursorY.value = e.y;
 
       if (frameCount.value % 3 === 0) {
         // Use downsampling to prevent array from growing unbounded
@@ -123,6 +142,7 @@ export const TracingCanvas: React.FC<TracingCanvasProps> = ({
     })
     .onEnd(() => {
       'worklet';
+      cursorVisible.value = withTiming(0, { duration: 120 });
       // Signal completion on JS thread safely
       runOnJS(onComplete)(points.value);
     });
@@ -152,6 +172,15 @@ export const TracingCanvas: React.FC<TracingCanvasProps> = ({
               strokeLinejoin="round"
             />
           </Svg>
+
+          <Animated.View pointerEvents="none" style={[styles.beeCursor, cursorStyle]}>
+            <LottieView
+              source={require('../../../assets/lottie/Bee flying.json')}
+              autoPlay
+              loop
+              style={styles.beeLottie}
+            />
+          </Animated.View>
         </View>
       </GestureDetector>
     </View>
@@ -166,5 +195,14 @@ const styles = StyleSheet.create({
   svg: {
     backgroundColor: '#F9F9F9',
     borderRadius: 12,
+  },
+  beeCursor: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+  },
+  beeLottie: {
+    width: '100%',
+    height: '100%',
   },
 });

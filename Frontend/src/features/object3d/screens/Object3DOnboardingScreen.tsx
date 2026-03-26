@@ -12,9 +12,12 @@ const { width, height } = Dimensions.get('window');
 
 type OnboardingScreenNavigationProp = NativeStackNavigationProp<Object3DParamList, 'Object3DOnboarding'>;
 
+// First-time welcome screen for 3D learning feature
+// Shows app features and benefits before entering main screen
 const Object3DOnboardingScreen = () => {
     const navigation = useNavigation<OnboardingScreenNavigationProp>();
 
+    // Save that student has seen onboarding, then go to home screen
     const handleStart = async () => {
         try {
             await AsyncStorage.setItem('@shikshasetu:onboarding_seen', 'true');

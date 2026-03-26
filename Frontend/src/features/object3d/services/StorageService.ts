@@ -1,8 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Keys to store data in device storage
 const FAVORITES_KEY = '@shikshasetu:favorites';
 const LEARNED_KEY = '@shikshasetu:learned';
 
+// Get list of all favorite object IDs from storage
 export const getFavorites = async (): Promise<string[]> => {
     try {
         const favorites = await AsyncStorage.getItem(FAVORITES_KEY);
@@ -13,10 +15,12 @@ export const getFavorites = async (): Promise<string[]> => {
     }
 };
 
+// Add an object to favorites list
+// Called when student taps heart icon
 export const saveFavorite = async (modelId: string): Promise<void> => {
     try {
         const favorites = await getFavorites();
-        if (!favorites.includes(modelId)) {
+        if (!favorites.includes(modelId)) { // Only add if not already in list
             const newFavorites = [...favorites, modelId];
             await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(newFavorites));
         }
@@ -25,6 +29,7 @@ export const saveFavorite = async (modelId: string): Promise<void> => {
     }
 };
 
+// Remove an object from favorites list
 export const removeFavorite = async (modelId: string): Promise<void> => {
     try {
         const favorites = await getFavorites();
@@ -35,12 +40,13 @@ export const removeFavorite = async (modelId: string): Promise<void> => {
     }
 };
 
+// Check if an object is in favorites
 export const isFavorite = async (modelId: string): Promise<boolean> => {
     const favorites = await getFavorites();
     return favorites.includes(modelId);
 };
 
-// Learned items functions
+// Get list of all learned object IDs from storage
 export const getLearnedItems = async (): Promise<string[]> => {
     try {
         const learned = await AsyncStorage.getItem(LEARNED_KEY);
@@ -51,6 +57,8 @@ export const getLearnedItems = async (): Promise<string[]> => {
     }
 };
 
+// Mark an object as learned
+// Called when student completes learning an object
 export const saveLearnedItem = async (modelId: string): Promise<void> => {
     try {
         const learned = await getLearnedItems();
@@ -63,6 +71,7 @@ export const saveLearnedItem = async (modelId: string): Promise<void> => {
     }
 };
 
+// Remove an object from learned list
 export const removeLearnedItem = async (modelId: string): Promise<void> => {
     try {
         const learned = await getLearnedItems();
@@ -73,6 +82,7 @@ export const removeLearnedItem = async (modelId: string): Promise<void> => {
     }
 };
 
+// Check if an object is marked as learned
 export const isLearned = async (modelId: string): Promise<boolean> => {
     const learned = await getLearnedItems();
     return learned.includes(modelId);

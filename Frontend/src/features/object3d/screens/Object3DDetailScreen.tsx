@@ -17,6 +17,8 @@ const { width, height } = Dimensions.get('window');
 const SNAP_TOP = 120;
 const SNAP_BOTTOM = height - 240;
 
+// Component that loads the 3D model from Sketchfab
+// Shows the interactive 3D viewer in a WebView
 const ThreeDViewer = memo(({ modelId }: { modelId: string }) => {
     const embedUrl = useMemo(() =>
         `https://sketchfab.com/models/${modelId}/embed?ui_infos=0&ui_help=0&ui_annotations=0&ui_watermark=0&ui_controls=1&preload=1&autostart=1`,
@@ -41,7 +43,8 @@ const ThreeDViewer = memo(({ modelId }: { modelId: string }) => {
     );
 });
 
-// Simple polyfill for requestIdleCallback in React Native
+// Helper function to delay loading until device is idle
+// Improves performance by not loading everything at once
 const requestIdle = (callback: any, options?: { timeout: number }) => {
     if (typeof (globalThis as any).requestIdleCallback !== 'undefined') {
         return (globalThis as any).requestIdleCallback(callback, options);
@@ -56,6 +59,8 @@ const cancelIdle = (id: any) => {
     return clearTimeout(id);
 };
 
+// Detail screen showing full 3D model with information
+// Called when student taps on any object from home screen
 const Object3DDetailScreen = () => {
     const navigation = useNavigation();
     const route = useRoute<DetailScreenRouteProp>();
@@ -76,6 +81,7 @@ const Object3DDetailScreen = () => {
     const infoPoints = useMemo(() => sentences.slice(1), [sentences]);
     const description = sentences[0];
 
+    // Handle swipe gesture on info card - swipe up to expand, down to collapse
     const panGesture = useMemo(() => Gesture.Pan()
         .runOnJS(true)
         .onBegin(() => {
@@ -105,6 +111,7 @@ const Object3DDetailScreen = () => {
             });
         }), [height]);
 
+    // Tap the drag handle to expand/collapse the info card
     const toggleCard = () => {
         const target = lastTranslateY.current === SNAP_TOP ? SNAP_BOTTOM : SNAP_TOP;
         Animated.spring(translateY, {
@@ -119,12 +126,15 @@ const Object3DDetailScreen = () => {
 
     const animatedTranslateY = Animated.add(translateY, dragY);
 
+    // Load favorite and learned status when screen opens
+    // Stop any playing audio when leaving screen
     useEffect(() => {
         loadFavoriteStatus();
         loadLearnedStatus();
         return () => TTSService.stop();
     }, []);
 
+    // Delay loading 3D model for smooth screen transition
     useFocusEffect(
         useCallback(() => {
             const id = requestIdle(
@@ -137,16 +147,19 @@ const Object3DDetailScreen = () => {
         }, [])
     );
 
+    // Check if this object is in favorites list
     const loadFavoriteStatus = async () => {
         const status = await checkFavorite(item.modelId);
         setIsFavorite(status);
     };
 
+    // Check if student already learned this object
     const loadLearnedStatus = async () => {
         const status = await checkLearned(item.modelId);
         setIsLearned(status);
     };
 
+    // Add or remove from favorites when student taps heart button
     const handleToggleFavorite = useCallback(async () => {
         if (isFavorite) {
             await removeFavorite(item.modelId);
@@ -157,6 +170,7 @@ const Object3DDetailScreen = () => {
         }
     }, [isFavorite, item.modelId]);
 
+    // Mark object as learned or unlearned when student taps button
     const handleMarkAsLearned = useCallback(async () => {
         if (isLearned) {
             await removeLearnedItem(item.modelId);
@@ -167,6 +181,7 @@ const Object3DDetailScreen = () => {
         }
     }, [isLearned, item.modelId]);
 
+    // Read object name and description aloud when student taps speaker button
     const handleSpeak = useCallback(() => {
         TTSService.speak(`${item.name}. ${item.info}`);
     }, [item.name, item.info]);

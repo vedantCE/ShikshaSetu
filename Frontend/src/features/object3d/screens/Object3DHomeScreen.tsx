@@ -24,6 +24,8 @@ import { getFavorites, saveFavorite, removeFavorite, getLearnedItems } from '../
 type HomeScreenNavigationProp = NativeStackNavigationProp<Object3DParamList, 'Object3DHome'>;
 type HomeScreenRouteProp = RouteProp<Object3DParamList, 'Object3DHome'>;
 
+// Main home screen showing all 3D objects
+// Called when student opens the 3D learning section
 const Object3DHomeScreen = () => {
     const navigation = useNavigation<HomeScreenNavigationProp>();
     const route = useRoute<HomeScreenRouteProp>();
@@ -37,7 +39,7 @@ const Object3DHomeScreen = () => {
     const [learnedItems, setLearnedItems] = useState<string[]>([]);
     const [isFavoritesOnly, setIsFavoritesOnly] = useState(false);
 
-    // Debounce search query
+    // Wait 100ms before searching - avoids searching on every keystroke
     useEffect(() => {
         const handler = setTimeout(() => {
             setDebouncedSearchQuery(searchQuery);
@@ -46,6 +48,7 @@ const Object3DHomeScreen = () => {
         return () => clearTimeout(handler);
     }, [searchQuery]);
 
+    // Load favorites and learned items when screen comes into view
     useEffect(() => {
         if (isFocused) {
             loadFavorites();
@@ -59,16 +62,19 @@ const Object3DHomeScreen = () => {
         }
     }, [route.params]);
 
+    // Get all favorite items from storage
     const loadFavorites = async () => {
         const favs = await getFavorites();
         setFavorites(favs);
     };
 
+    // Get all learned items from storage
     const loadLearnedItems = async () => {
         const learned = await getLearnedItems();
         setLearnedItems(learned);
     };
 
+    // Combine all 3D objects from different categories into one list
     const allItems = useMemo(() => {
         const items: ObjectItem[] = [];
         Object.keys(DATA).forEach((key) => {
@@ -77,6 +83,7 @@ const Object3DHomeScreen = () => {
         return items;
     }, []);
 
+    // Filter items based on search, category, or favorites
     const filteredItems = useMemo(() => {
         if (debouncedSearchQuery) {
             return allItems.filter((item) =>
@@ -96,6 +103,8 @@ const Object3DHomeScreen = () => {
         return items;
     }, [allItems, selectedCategory, debouncedSearchQuery, favorites, isFavoritesOnly]);
 
+    // Add or remove item from favorites
+    // Called when student taps heart icon on any object
     const handleToggleFavorite = useCallback(async (modelId: string) => {
         setFavorites((prev) => {
             const isFav = prev.includes(modelId);
@@ -109,6 +118,7 @@ const Object3DHomeScreen = () => {
         });
     }, []);
 
+    // Open detail screen when student taps on any 3D object
     const handleNavigateDetail = useCallback(
         (item: ObjectItem) => {
             navigation.navigate('Object3DDetail', { item });
@@ -141,6 +151,7 @@ const Object3DHomeScreen = () => {
 
     const keyExtractor = useCallback((item: ObjectItem) => item.modelId, []);
 
+    // Header showing greeting and action buttons
     const renderHeaderComponent = () => (
         <View style={[styles.header, { paddingTop: insets.top + SPACING.m }]}>
             <View>

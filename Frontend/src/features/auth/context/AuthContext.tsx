@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchChildren } from '../services/studentApi';
 
+declare const atob: ((data: string) => string) | undefined;
+
 type Role = 'parent' | 'teacher';
 type AuthenticatedUser = {
   user_id: number;
@@ -9,6 +11,23 @@ type AuthenticatedUser = {
   email: string;
   name?: string;
   token: string;
+};
+
+const getJwtExp = (token: string): number | null => {
+  try {
+    const payload = token.split('.')[1];
+    if (!payload) return null;
+
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(normalized.length + ((4 - normalized.length % 4) % 4), '=');
+    const decoded = typeof atob === 'function' ? atob(padded) : null;
+    if (!decoded) return null;
+
+    const parsed = JSON.parse(decoded);
+    return typeof parsed.exp === 'number' ? parsed.exp : null;
+  } catch {
+    return null;
+  }
 };
 
 type Student = {
@@ -73,14 +92,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (userData) {
         const parsed = JSON.parse(userData);
 
-        // Validate expiry — if exp field exists, check it
-        let isExpired = false;
-        if (parsed.exp && Date.now() >= parsed.exp * 1000) {
-          isExpired = true;
-        }
+        const tokenExp = getJwtExp(parsed.token) ?? (typeof parsed.exp === 'number' ? parsed.exp : null);
+        const isExpired = Boolean(tokenExp && Date.now() >= tokenExp * 1000);
 
         if (!isExpired) {
-          setUser(parsed);
+          setUser({
+            user_id: parsed.user_id,
+            role: parsed.role,
+            email: parsed.email,
+            token: parsed.token,
+            name: parsed.name,
+          });
 
           // ─── ISSUE 1 FIX: Rehydrate children from backend on every app startup ──
           // Without this, students[] was always [] after a restart because addStudent()
@@ -126,8 +148,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(userData);
 
     if (rememberMe) {
-      // Set token expiry to 30 days from now
-      const exp = Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60);
+      const exp = getJwtExp(token);
       await AsyncStorage.setItem('@auth_user', JSON.stringify({ ...userData, exp }));
     }
   };

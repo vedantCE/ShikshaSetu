@@ -42,7 +42,7 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
           user_role: 'teacher',
         });
 
-        login({
+        await login({
           user_id: response.user_id,
           role: response.user_role,
           email,
@@ -57,7 +57,7 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
           user_password: password,
         });
 
-        login({
+        await login({
           user_id: response.user_id,
           role: response.user_role,
           email,

@@ -76,3 +76,33 @@ Body:
 }
 ```
 Highest percentage disorder updates `disorder_type` in database.
+
+### POST /update-tracing
+Store tracing stars for a single alphabet or number item.
+```json
+Headers: { "Authorization": "Bearer <token>" }
+Body:
+{
+  "student_id": 12,
+  "type": "alphabet",
+  "item": "a",
+  "stars": 3
+}
+```
+
+Rules:
+- Saves stars in `abctracing.a` or `number_tracing.n0`-`n9`
+- Keeps the max stars only
+- Progress is auto-recalculated by a database trigger
+
+### GET /tracing-progress
+Returns tracing progress for all students visible to the logged-in parent or teacher.
+
+Optional query params:
+- `includeStars=true`
+
+### GET /students/:student_id/tracing-progress
+Returns tracing progress for one student if the logged-in user is mapped to that student.
+
+Optional query params:
+- `includeStars=true`

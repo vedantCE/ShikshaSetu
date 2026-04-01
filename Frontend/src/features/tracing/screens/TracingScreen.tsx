@@ -189,6 +189,8 @@ import { addPoints } from '../../activities/store/pointsStore';
 import { TRACING_THRESHOLD, ALPHABET } from '../constants/Alphabet';
 import { NUMBERS } from '../constants/Numbers';
 import { SHAPES } from '../constants/Shapes';
+import { useAuth } from '../../auth/context/AuthContext';
+import { updateTracing } from '../services/tracingApi';
 
 type TracingScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Tracing'>;
@@ -199,6 +201,8 @@ export const TracingScreen: React.FC<TracingScreenProps> = ({
   navigation,
   route,
 }) => {
+  const { user, currentStudent } = useAuth();
+
   // Support both old (letter) and new (category + item) param formats
   const params = route.params as { letter?: string; category?: string; item?: string };
 
@@ -240,73 +244,100 @@ export const TracingScreen: React.FC<TracingScreenProps> = ({
     };
   }, []);
 
+  const syncTracingProgress = async (earnedStars: number) => {
+    if (!user?.token || !currentStudent?.id) {
+      console.warn('Tracing sync skipped: missing auth token or selected student');
+      return;
+    }
+
+    if (category === 'shapes') {
+      return;
+    }
+
+    const tracingType = category === 'numbers' ? 'number' : 'alphabet';
+    const tracingItem = category === 'numbers' ? item : item.toLowerCase();
+
+    await updateTracing(user.token, {
+      student_id: Number(currentStudent.id),
+      type: tracingType,
+      item: tracingItem,
+      stars: earnedStars,
+    });
+  };
+
   const handleComplete = (userPoints: { x: number; y: number }[]) => {
     setTimeout(() => {
       if (!isMountedRef.current) return;
 
-      try {
-        console.log('TRACE END - Validating', userPoints.length);
+      (async () => {
+        try {
+          console.log('TRACE END - Validating', userPoints.length);
 
-        // Hard limit points to prevent blocking JS thread
-        const sampledPoints = userPoints.slice(0, 300);
+          // Hard limit points to prevent blocking JS thread
+          const sampledPoints = userPoints.slice(0, 300);
 
-        const accuracy = validateTracing(sampledPoints, letterPoints);
-        console.log('Accuracy:', accuracy);
+          const accuracy = validateTracing(sampledPoints, letterPoints);
+          console.log('Accuracy:', accuracy);
 
-        const isSuccess = accuracy >= TRACING_THRESHOLD;
+          const isSuccess = accuracy >= TRACING_THRESHOLD;
 
-        setSuccess(isSuccess);
-        setShowFeedback(true);
+          setSuccess(isSuccess);
+          setShowFeedback(true);
 
-        if (isSuccess) {
-          // Star Logic: 90%+ = 4 stars, 70-89% = 3 stars
-          const earnedStars = accuracy >= 0.9 ? 4 : 3;
+          if (isSuccess) {
+            // Keep tracing stars aligned with backend constraints: 0 to 3
+            const earnedStars = accuracy >= 0.9 ? 3 : 2;
 
-          setStars(earnedStars);
+            setStars(earnedStars);
 
-          // Award points: 4 stars = +20, 3 stars = +10
-          const pointsEarned = earnedStars >= 4 ? 20 : 10;
-          addPoints(pointsEarned).catch((err) =>
-            console.log('Points error', err)
-          );
+            // Award a bit more for perfect-ish traces
+            const pointsEarned = earnedStars >= 3 ? 20 : 10;
+            addPoints(pointsEarned).catch((err) =>
+              console.log('Points error', err)
+            );
 
-          // Save progress with category support
-          saveProgress(category, item, earnedStars).catch((err) =>
-            console.log('Save error', err)
-          );
+            await Promise.all([
+              saveProgress(category, item, earnedStars).catch((err) =>
+                console.log('Save error', err)
+              ),
+              syncTracingProgress(earnedStars).catch((err) =>
+                console.log('Tracing sync error', err)
+              ),
+            ]);
 
-          // Auto-Advance Logic
-          setTimeout(() => {
-            if (!isMountedRef.current) return;
+            // Auto-Advance Logic
+            setTimeout(() => {
+              if (!isMountedRef.current) return;
 
-            const currentIndex = sequence.indexOf(item);
-            const nextIndex = currentIndex + 1;
+              const currentIndex = sequence.indexOf(item);
+              const nextIndex = currentIndex + 1;
 
-            if (nextIndex < sequence.length) {
-              const nextItem = sequence[nextIndex];
-              // Use category-aware navigation or legacy format
-              if (category === 'letters' && params.letter) {
-                navigation.replace('Tracing', { letter: nextItem });
+              if (nextIndex < sequence.length) {
+                const nextItem = sequence[nextIndex];
+                // Use category-aware navigation or legacy format
+                if (category === 'letters' && params.letter) {
+                  navigation.replace('Tracing', { letter: nextItem });
+                } else {
+                  navigation.replace('Tracing', { category, item: nextItem });
+                }
               } else {
-                navigation.replace('Tracing', { category, item: nextItem });
+                // End of sequence - go back to appropriate grid
+                navigation.goBack();
               }
-            } else {
-              // End of sequence - go back to appropriate grid
-              navigation.goBack();
-            }
-          }, 2000);
-        } else {
-          // Failure - hide feedback and reset canvas
-          setTimeout(() => {
-            if (isMountedRef.current) {
-              setShowFeedback(false);
-              setKey((prev) => prev + 1);
-            }
-          }, 2000);
+            }, 2000);
+          } else {
+            // Failure - hide feedback and reset canvas
+            setTimeout(() => {
+              if (isMountedRef.current) {
+                setShowFeedback(false);
+                setKey((prev) => prev + 1);
+              }
+            }, 2000);
+          }
+        } catch (e) {
+          console.log('Tracing error', e);
         }
-      } catch (e) {
-        console.log('Tracing error', e);
-      }
+      })();
     }, 100);
   };
 

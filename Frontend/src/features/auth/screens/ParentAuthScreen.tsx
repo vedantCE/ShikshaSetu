@@ -40,7 +40,7 @@ export const ParentAuthScreen = ({ navigation }: any) => {
           user_role: 'parent',
         });
 
-        login({
+        await login({
           user_id: response.user_id,
           role: response.user_role,
           email,
@@ -56,7 +56,7 @@ export const ParentAuthScreen = ({ navigation }: any) => {
           user_password: password,
         });
 
-        login({
+        await login({
           user_id: response.user_id,
           role: response.user_role,
           email,

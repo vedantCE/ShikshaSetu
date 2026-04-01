@@ -18,7 +18,7 @@ export const API_BASE_URL =
     (DEV_HOST
         ? `http://${DEV_HOST}:5001`
         : Platform.OS === 'android'
-            ? 'http://10.167.190.229:5001'
+            ? 'http://10.0.2.2:5001'
             : 'http://localhost:5001');
 
 // Public request (no token) —>used by login/register 

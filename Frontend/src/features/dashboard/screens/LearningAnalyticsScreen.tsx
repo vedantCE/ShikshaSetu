@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     View,
     Text,
@@ -6,13 +6,103 @@ import {
     ScrollView,
     Pressable,
     Dimensions,
+    ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useAuth } from '../../auth/context/AuthContext';
+import { fetchStudentTracingProgress, type StudentTracingProgressResponse } from '../../tracing/services/tracingApi';
 
 const { width } = Dimensions.get('window');
 
 const LearningAnalyticsScreen = ({ navigation }: any) => {
+    const { user, students, currentStudent } = useAuth();
+    const [progress, setProgress] = useState<StudentTracingProgressResponse | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    const targetStudent = useMemo(() => {
+        if (currentStudent) {
+            return currentStudent;
+        }
+
+        return students?.[0] ?? null;
+    }, [currentStudent, students]);
+
+    useEffect(() => {
+        const loadProgress = async () => {
+            if (!user?.token || !targetStudent?.id) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                setLoading(true);
+                const data = await fetchStudentTracingProgress(user.token, targetStudent.id);
+                setProgress(data);
+            } catch (error) {
+                console.log('Failed to load tracing insights', error);
+                setProgress(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadProgress();
+    }, [user?.token, targetStudent?.id]);
+
+    const alphabetPercent = Math.round(((progress?.alphabet_progress ?? 0) / 3) * 100);
+    const numberPercent = Math.round(((progress?.number_progress ?? 0) / 3) * 100);
+    const overallPercent = Math.round((alphabetPercent + numberPercent) / 2);
+    const masteredTracks = [alphabetPercent, numberPercent].filter((value) => value >= 70).length;
+    const miniStats = [
+        {
+            key: 'alphabet',
+            label: 'Alphabet',
+            value: `${alphabetPercent}%`,
+            icon: 'alphabetical-variant',
+            iconStyle: styles.iconBgBlue,
+            iconColor: '#1B337F',
+            trendStyle: styles.miniTrendBadgeBlue,
+        },
+        {
+            key: 'number',
+            label: 'Numbers',
+            value: `${numberPercent}%`,
+            icon: 'numeric',
+            iconStyle: styles.iconBgGreen,
+            iconColor: '#059669',
+            trendStyle: styles.miniTrendBadgeGreen,
+        },
+        {
+            key: 'mastered',
+            label: 'Mastered',
+            value: `${masteredTracks}/2`,
+            icon: 'check-circle',
+            iconStyle: styles.iconBgIndigo,
+            iconColor: '#4338CA',
+            trendStyle: styles.miniTrendBadgePurple,
+        },
+    ];
+
+    const masteryCards = [
+        {
+            key: 'alphabet',
+            title: 'Alphabet Tracing',
+            percent: alphabetPercent,
+            fillColor: '#2563EB',
+            iconContainerStyle: styles.masteryIconBgLightBlue,
+            icon: <Icon name="alphabetical-variant" size={20} color="#2563EB" />,
+        },
+        {
+            key: 'number',
+            title: 'Number Tracing',
+            percent: numberPercent,
+            fillColor: '#059669',
+            iconContainerStyle: styles.masteryIconBgLightGreen,
+            icon: <Icon name="numeric" size={20} color="#059669" />,
+        },
+    ];
+
     return (
         <SafeAreaView style={styles.container}>
             {/* Header */}
@@ -27,51 +117,54 @@ const LearningAnalyticsScreen = ({ navigation }: any) => {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+                <View style={styles.studentBanner}>
+                    <Text style={styles.studentBannerLabel}>Showing data for</Text>
+                    <Text style={styles.studentBannerName}>{targetStudent?.name || 'No child selected'}</Text>
+                </View>
+
+                {loading ? (
+                    <View style={styles.loadingCard}>
+                        <ActivityIndicator size="small" color="#1B337F" />
+                        <Text style={styles.loadingText}>Loading tracing insights...</Text>
+                    </View>
+                ) : null}
 
                 {/* Top Mini Stats */}
                 <View style={styles.topStatsRow}>
-                    <View style={styles.miniStatCard}>
-                        <View style={styles.iconBgBlue}>
-                            <Icon name="clock-time-four" size={16} color="#1B337F" />
+                    {miniStats.map((stat) => (
+                        <View key={stat.key} style={styles.miniStatCard}>
+                            <View style={stat.iconStyle}>
+                                <Icon name={stat.icon} size={16} color={stat.iconColor} />
+                            </View>
+                            <Text style={styles.miniStatLabel}>{stat.label}</Text>
+                            <Text style={styles.miniStatValue}>{stat.value}</Text>
+                            <View style={stat.trendStyle}>
+                                <Text style={styles.miniTrendText}>Live</Text>
+                            </View>
                         </View>
-                        <Text style={styles.miniStatLabel}>Time</Text>
-                        <Text style={styles.miniStatValue}>12h 30m</Text>
-                        <View style={styles.miniTrendBadge}><Text style={styles.miniTrendText}>+5%</Text></View>
-                    </View>
-
-                    <View style={styles.miniStatCard}>
-                        <View style={styles.iconBgPurple}>
-                            <Icon name="school" size={16} color="#4F46E5" />
-                        </View>
-                        <Text style={styles.miniStatLabel}>Score</Text>
-                        <Text style={styles.miniStatValue}>88%</Text>
-                        <View style={styles.miniTrendBadge}><Text style={styles.miniTrendText}>+2%</Text></View>
-                    </View>
-
-                    <View style={styles.miniStatCard}>
-                        <View style={styles.iconBgIndigo}>
-                            <Icon name="check-circle" size={16} color="#4338CA" />
-                        </View>
-                        <Text style={styles.miniStatLabel}>Done</Text>
-                        <Text style={styles.miniStatValue}>15 Tasks</Text>
-                        <View style={styles.miniTrendBadge}><Text style={styles.miniTrendText}>+10%</Text></View>
-                    </View>
+                    ))}
                 </View>
 
                 {/* Weekly Performance - Mock Graph */}
                 <View style={styles.chartCard}>
                     <View style={styles.chartHeader}>
                         <View>
-                            <Text style={styles.chartTitle}>Weekly Performance</Text>
-                            <Text style={styles.chartSubtitle}>Learning activity trends</Text>
+                            <Text style={styles.chartTitle}>Tracing Overview</Text>
+                            <Text style={styles.chartSubtitle}>Alphabet and number progress</Text>
                         </View>
                         <View style={styles.chartTitleRight}>
-                            <Text style={styles.chartValue}>85%</Text>
-                            <Text style={styles.chartTrendText}>+12% vs last wk</Text>
+                            <Text style={styles.chartValue}>{overallPercent}%</Text>
+                            <Text style={styles.chartTrendText}>
+                                {progress?.last_tracing_update
+                                    ? `Updated ${new Date(progress.last_tracing_update).toLocaleDateString('en-IN', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                    })}`
+                                    : 'Waiting for tracing data'}
+                            </Text>
                         </View>
                     </View>
 
-                    {/* Simple mock area chart using static views (as a placeholder for an actual SVG) */}
                     <View style={styles.chartArea}>
                         <View style={styles.chartGridLine} />
                         <View style={styles.chartGridLine} />
@@ -79,75 +172,56 @@ const LearningAnalyticsScreen = ({ navigation }: any) => {
                         <View style={styles.chartGridLine} />
 
                         <View style={styles.mockChartPathContainer}>
-                            {/* Very rough approximation using flex items */}
-                            <View style={[styles.bar, { height: '20%' }]} />
-                            <View style={[styles.bar, { height: '50%' }]} />
-                            <View style={[styles.bar, { height: '30%' }]} />
-                            <View style={[styles.bar, { height: '40%' }]} />
-                            <View style={[styles.bar, { height: '80%' }]} />
-                            <View style={[styles.bar, { height: '50%' }]} />
-                            <View style={[styles.bar, { height: '60%' }]} />
+                            {[alphabetPercent, numberPercent, overallPercent].map((value, index) => (
+                                <View
+                                    key={index}
+                                    style={[
+                                        styles.bar,
+                                        {
+                                            height: `${Math.max(value, 6)}%`,
+                                            backgroundColor: index === 0 ? '#2563EB' : index === 1 ? '#059669' : '#7C3AED',
+                                            width: 24,
+                                        },
+                                    ]}
+                                />
+                            ))}
                         </View>
                     </View>
 
                     <View style={styles.daysRow}>
-                        <Text style={styles.dayText}>Mon</Text>
-                        <Text style={styles.dayText}>Tue</Text>
-                        <Text style={styles.dayText}>Wed</Text>
-                        <Text style={styles.dayText}>Thu</Text>
-                        <Text style={styles.dayText}>Fri</Text>
-                        <Text style={styles.dayText}>Sat</Text>
-                        <Text style={styles.dayText}>Sun</Text>
+                        <Text style={styles.dayText}>Alphabet</Text>
+                        <Text style={styles.dayText}>Numbers</Text>
+                        <Text style={styles.dayText}>Overall</Text>
                     </View>
                 </View>
 
                 {/* Subject Mastery */}
-                <Text style={styles.sectionHeading}>Subject Mastery</Text>
+                <Text style={styles.sectionHeading}>Tracing Mastery</Text>
 
-                <View style={styles.masteryCard}>
-                    <View style={styles.masteryIconBgLightBlue}>
-                        <Text style={styles.iconLetterBlue}>Σ</Text>
-                    </View>
-                    <View style={styles.masteryInfo}>
-                        <View style={styles.masteryTitleRow}>
-                            <Text style={styles.masteryTitle}>Mathematics</Text>
-                            <Text style={styles.masteryPercent}>92%</Text>
+                {masteryCards.map((card) => (
+                    <View key={card.key} style={styles.masteryCard}>
+                        <View style={card.iconContainerStyle}>
+                            {card.icon}
                         </View>
-                        <View style={styles.masteryBarBg}>
-                            <View style={[styles.masteryBarFill, { width: '92%', backgroundColor: '#2563EB' }]} />
-                        </View>
-                    </View>
-                </View>
-
-                <View style={styles.masteryCard}>
-                    <View style={styles.masteryIconBgLightGreen}>
-                        <Icon name="flask" size={20} color="#059669" />
-                    </View>
-                    <View style={styles.masteryInfo}>
-                        <View style={styles.masteryTitleRow}>
-                            <Text style={styles.masteryTitle}>Science</Text>
-                            <Text style={styles.masteryPercent}>78%</Text>
-                        </View>
-                        <View style={styles.masteryBarBg}>
-                            <View style={[styles.masteryBarFill, { width: '78%', backgroundColor: '#059669' }]} />
+                        <View style={styles.masteryInfo}>
+                            <View style={styles.masteryTitleRow}>
+                                <Text style={styles.masteryTitle}>{card.title}</Text>
+                                <Text style={styles.masteryPercent}>{card.percent}%</Text>
+                            </View>
+                            <View style={styles.masteryBarBg}>
+                                <View
+                                    style={[
+                                        styles.masteryBarFill,
+                                        {
+                                            width: `${card.percent}%`,
+                                            backgroundColor: card.fillColor,
+                                        },
+                                    ]}
+                                />
+                            </View>
                         </View>
                     </View>
-                </View>
-
-                <View style={styles.masteryCard}>
-                    <View style={styles.masteryIconBgLightPurple}>
-                        <Icon name="translate" size={20} color="#9333EA" />
-                    </View>
-                    <View style={styles.masteryInfo}>
-                        <View style={styles.masteryTitleRow}>
-                            <Text style={styles.masteryTitle}>Languages</Text>
-                            <Text style={styles.masteryPercent}>85%</Text>
-                        </View>
-                        <View style={styles.masteryBarBg}>
-                            <View style={[styles.masteryBarFill, { width: '85%', backgroundColor: '#9333EA' }]} />
-                        </View>
-                    </View>
-                </View>
+                ))}
 
                 {/* Focus Pattern */}
                 <View style={styles.chartCard}>
@@ -223,6 +297,36 @@ const styles = StyleSheet.create({
     scrollContent: {
         paddingBottom: 40,
     },
+    studentBanner: {
+        marginHorizontal: 16,
+        marginTop: 8,
+        marginBottom: 16,
+    },
+    studentBannerLabel: {
+        fontSize: 12,
+        color: '#6B7280',
+        marginBottom: 2,
+    },
+    studentBannerName: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#1A1A2E',
+    },
+    loadingCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        backgroundColor: '#FFFFFF',
+        marginHorizontal: 16,
+        borderRadius: 16,
+        padding: 14,
+        marginBottom: 16,
+    },
+    loadingText: {
+        color: '#1A1A2E',
+        fontSize: 14,
+        fontWeight: '500',
+    },
     topStatsRow: {
         flexDirection: 'row',
         paddingHorizontal: 16,
@@ -243,6 +347,7 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     iconBgBlue: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#E8F4FD', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+    iconBgGreen: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#D1FAE5', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
     iconBgPurple: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
     iconBgIndigo: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#E0E7FF', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
     miniStatLabel: {
@@ -258,6 +363,24 @@ const styles = StyleSheet.create({
     },
     miniTrendBadge: {
         backgroundColor: '#D1FAE5',
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 12,
+    },
+    miniTrendBadgeBlue: {
+        backgroundColor: '#DBEAFE',
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 12,
+    },
+    miniTrendBadgeGreen: {
+        backgroundColor: '#D1FAE5',
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 12,
+    },
+    miniTrendBadgePurple: {
+        backgroundColor: '#EDE9FE',
         paddingHorizontal: 8,
         paddingVertical: 2,
         borderRadius: 12,

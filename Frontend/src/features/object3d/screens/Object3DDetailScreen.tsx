@@ -24,6 +24,8 @@ const ThreeDViewer = memo(({ modelId }: { modelId: string }) => {
         `https://sketchfab.com/models/${modelId}/embed?ui_infos=0&ui_help=0&ui_annotations=0&ui_watermark=0&ui_controls=1&preload=1&autostart=1`,
         [modelId]
     );
+    console.log("MODEL ID:", modelId);
+    console.log("EMBED URL:", embedUrl);
 
     return (
         <WebView

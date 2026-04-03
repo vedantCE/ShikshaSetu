@@ -25,11 +25,11 @@
 
 import 'react-native-gesture-handler';
 import React, { useEffect, useState } from 'react';
-import { StatusBar, View, ActivityIndicator } from 'react-native';
+import { StatusBar, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import SystemNavigationBar from 'react-native-system-navigation-bar';
 import { RootNavigator } from '../navigation/RootNavigator';
-import { initializeProgress } from '../features/tracing/storage/progressStore';
+import LoaderScreen from '../components/LoaderScreen';
 
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -37,11 +37,6 @@ function App() {
   useEffect(() => {
     const initApp = async () => {
       try {
-        // Initialize progress storage
-        await initializeProgress().catch(error => {
-          console.error('App: Failed to initialize progress:', error);
-        });
-
         // Set up immersive sticky mode
         try {
           StatusBar.setHidden(true);
@@ -76,28 +71,37 @@ function App() {
   }, []);
 
   if (!isInitialized) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F7F8FA' }}>
-        <ActivityIndicator size="large" color="#1B337F" />
-      </View>
-    );
+    return <LoaderScreen text="Preparing your fun learning experience..." />;
   }
 
   // Final safety check for RootNavigator
   if (!RootNavigator) {
     console.error('App: RootNavigator is undefined. Check for circular dependencies or export errors.');
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="red" />
+      <View style={styles.fallbackContainer}>
+        <LoaderScreen text="Loading app modules..." fullscreen={false} />
       </View>
     );
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={styles.root}>
       <RootNavigator />
     </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+  fallbackContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F3FBFF',
+    paddingHorizontal: 16,
+  },
+});
 
 export default App;

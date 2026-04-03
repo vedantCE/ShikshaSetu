@@ -9,7 +9,9 @@ import {
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigation/RootNavigator';
 import { NUMBERS } from '../constants/Numbers';
-import { getProgress, BaseProgress } from '../storage/progressStore';
+import { getProgress, initializeProgress, BaseProgress } from '../storage/progressStore';
+import { useAuth } from '../../auth/context/AuthContext';
+import LoaderScreen from '../../../components/LoaderScreen';
 
 type NumberGridScreenProps = {
     navigation: NativeStackNavigationProp<RootStackParamList, 'NumberGrid'>;
@@ -19,17 +21,40 @@ export const NumberGridScreen: React.FC<NumberGridScreenProps> = ({
     navigation,
 }) => {
     const [progress, setProgress] = useState<BaseProgress[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const { currentStudent, user } = useAuth();
+    const progressScope = String(currentStudent?.id || user?.user_id || 'guest');
 
     const loadProgress = async () => {
-        const data = await getProgress('numbers');
-        setProgress(data);
+        setIsLoading(true);
+        try {
+            console.log('[NumberGrid] loading progress', {
+                category: 'numbers',
+                progressScope,
+            });
+            await initializeProgress('numbers', progressScope);
+            const data = await getProgress('numbers', progressScope);
+            setProgress(data);
+            console.log('[NumberGrid] progress loaded', {
+                category: 'numbers',
+                progressScope,
+                completed: data.filter(i => i.stars > 0).length,
+                total: data.length,
+            });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     useEffect(() => {
         loadProgress();
         const unsubscribe = navigation.addListener('focus', loadProgress);
         return unsubscribe;
-    }, [navigation]);
+    }, [navigation, progressScope]);
+
+    if (isLoading) {
+        return <LoaderScreen text="Loading tracing progress..." />;
+    }
 
     const getStars = (num: string): number => {
         return progress.find(p => p.item === num)?.stars || 0;

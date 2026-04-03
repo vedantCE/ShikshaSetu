@@ -61,7 +61,7 @@ const ParentDashboardScreen = ({ navigation }: any) => {
                 style={styles.childCard}
                 onPress={() => {
                   selectStudent(item.id);
-                  navigation.navigate('ActivityHub');
+                  navigation.navigate('ActivityHub', { studentId: item.id });
                 }}
               >
                 <View style={styles.childCardInner}>

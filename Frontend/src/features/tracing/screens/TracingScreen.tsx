@@ -174,7 +174,7 @@
 //   },
 // });
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../../../navigation/RootNavigator';
@@ -201,7 +201,8 @@ export const TracingScreen: React.FC<TracingScreenProps> = ({
   navigation,
   route,
 }) => {
-  const { user, currentStudent } = useAuth();
+  const { user, currentStudent, students } = useAuth();
+  const progressScope = String(currentStudent?.id || user?.user_id || 'guest');
 
   // Support both old (letter) and new (category + item) param formats
   const params = route.params as { letter?: string; category?: string; item?: string };
@@ -245,7 +246,9 @@ export const TracingScreen: React.FC<TracingScreenProps> = ({
   }, []);
 
   const syncTracingProgress = async (earnedStars: number) => {
-    if (!user?.token || !currentStudent?.id) {
+    const targetStudentId = currentStudent?.id ?? students?.[0]?.id;
+
+    if (!user?.token || !targetStudentId) {
       console.warn('Tracing sync skipped: missing auth token or selected student');
       return;
     }
@@ -258,7 +261,7 @@ export const TracingScreen: React.FC<TracingScreenProps> = ({
     const tracingItem = category === 'numbers' ? item : item.toLowerCase();
 
     await updateTracing(user.token, {
-      student_id: Number(currentStudent.id),
+      student_id: Number(targetStudentId),
       type: tracingType,
       item: tracingItem,
       stars: earnedStars,
@@ -296,14 +299,19 @@ export const TracingScreen: React.FC<TracingScreenProps> = ({
               console.log('Points error', err)
             );
 
-            await Promise.all([
-              saveProgress(category, item, earnedStars).catch((err) =>
-                console.log('Save error', err)
-              ),
-              syncTracingProgress(earnedStars).catch((err) =>
-                console.log('Tracing sync error', err)
-              ),
-            ]);
+            await saveProgress(category, item, earnedStars, progressScope).catch((err) =>
+              console.log('Save error', err)
+            );
+
+            try {
+              await syncTracingProgress(earnedStars);
+            } catch (err) {
+              console.log('Tracing sync error', err);
+              Alert.alert(
+                'Sync issue',
+                'Tracing completed on device, but progress could not be synced to server. Please check connection and try again.'
+              );
+            }
 
             // Auto-Advance Logic
             setTimeout(() => {

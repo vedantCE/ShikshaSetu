@@ -23,16 +23,19 @@ import Animated, {
   ZoomIn,
 } from 'react-native-reanimated';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../../../navigation/RootNavigator';
 import { useAuth } from '../../auth/context/AuthContext';
 import LottieView from 'lottie-react-native';
 import { getPoints } from '../store/pointsStore';
 import { Alert } from 'react-native';
+import LoaderScreen from '../../../components/LoaderScreen';
 
 const { width } = Dimensions.get('window');
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'ActivityHub'>;
+  route: RouteProp<RootStackParamList, 'ActivityHub'>;
 };
 
 // --- Animations ---
@@ -65,9 +68,28 @@ const ScalePressable = ({ children, onPress, style }: { children: React.ReactNod
   );
 };
 
-export const ActivityHubScreen = ({ navigation }: Props) => {
-  const { user, currentStudent } = useAuth();
+export const ActivityHubScreen = ({ navigation, route }: Props) => {
+  const { user, currentStudent, students, selectStudent, isStudentLoading } = useAuth();
   const [totalPoints, setTotalPoints] = useState(0);
+
+  const incomingStudentId = route.params?.studentId;
+
+  useEffect(() => {
+    if (incomingStudentId && incomingStudentId !== currentStudent?.id) {
+      selectStudent(incomingStudentId);
+    }
+  }, [incomingStudentId, currentStudent?.id, selectStudent, students]);
+
+  useEffect(() => {
+    console.log('[ActivityHub] render-state', {
+      userId: user?.user_id ?? null,
+      currentStudentId: currentStudent?.id ?? null,
+      currentStudentName: currentStudent?.name ?? null,
+      studentsCount: students.length,
+      isStudentLoading,
+      incomingStudentId: incomingStudentId ?? null,
+    });
+  }, [user?.user_id, currentStudent?.id, currentStudent?.name, students.length, isStudentLoading, incomingStudentId]);
 
   const loadPoints = useCallback(async () => {
     const pts = await getPoints();
@@ -97,6 +119,12 @@ export const ActivityHubScreen = ({ navigation }: Props) => {
     if (hours < 18) return 'Good Afternoon!';
     return 'Good Evening!';
   };
+
+  const shouldWaitForStudent = isStudentLoading || (students.length > 0 && !currentStudent);
+
+  if (shouldWaitForStudent) {
+    return <LoaderScreen text="Loading student profile..." />;
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>

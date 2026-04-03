@@ -293,11 +293,11 @@ exports.startGame = asyncHandler(async (req, res) => {
     const q1 = generateQuestion(difficulty);
     const q2 = generateQuestion(difficulty);
 
-    
+
     // Saves the game to DB including the ANSWERS
-        // Answers are stored in DB — never sent to frontend
-        // This is how the backend checks if player's answer is correct
-        // Frontend never sees the answer — no cheating possible
+    // Answers are stored in DB — never sent to frontend
+    // This is how the backend checks if player's answer is correct
+    // Frontend never sees the answer — no cheating possible
     const result = await pool.query(
         `INSERT INTO tug_of_war_games
            (user_id, difficulty, current_q_team1, current_a_team1, current_q_team2, current_a_team2)
@@ -346,11 +346,11 @@ exports.submitAnswer = asyncHandler(async (req, res) => {
 
     const game = gameResult.rows[0];
     // game now has everything:
-        // game.current_a_team1 = correct answer for team1 (e.g. 11)
-        // game.current_a_team2 = correct answer for team2 (e.g. 8)
-        // game.rope_position   = current rope position (-100 to +100)
-        // game.status          = 'active' or 'finished'
-        // game.difficulty      = 'easy'/'medium'/'hard'
+    // game.current_a_team1 = correct answer for team1 (e.g. 11)
+    // game.current_a_team2 = correct answer for team2 (e.g. 8)
+    // game.rope_position   = current rope position (-100 to +100)
+    // game.status          = 'active' or 'finished'
+    // game.difficulty      = 'easy'/'medium'/'hard'
 
     // Edge case prevention: Prevent submitting answers after game ends Could happen if player submits just as timer hits 0
     if (game.status !== 'active')
@@ -361,16 +361,16 @@ exports.submitAnswer = asyncHandler(async (req, res) => {
     const isCorrect = Number(answer) === correctAnswer;
 
     // Step 3 — figure out what DB columns to update
-    const scoreField   = team === 'team1' ? 'team1_score'   : 'team2_score';
+    const scoreField = team === 'team1' ? 'team1_score' : 'team2_score';
     const correctField = team === 'team1' ? 'correct_team1' : 'correct_team2';
-    const ropeShift    = team === 'team1' ? -20 : 20;
+    const ropeShift = team === 'team1' ? -20 : 20;
 
     // Generate a fresh question for whoever just answered,So the game keeps going with new questions continuously
-    const newQ         = generateQuestion(game.difficulty);
+    const newQ = generateQuestion(game.difficulty);
 
     // Which DB columns to update with new question/answer
-    const qField       = team === 'team1' ? 'current_q_team1' : 'current_q_team2';
-    const aField       = team === 'team1' ? 'current_a_team1' : 'current_a_team2';
+    const qField = team === 'team1' ? 'current_q_team1' : 'current_q_team2';
+    const aField = team === 'team1' ? 'current_a_team1' : 'current_a_team2';
 
     // Step 4 — build and run the UPDATE query
     let updateQuery, updateParams;
@@ -395,8 +395,8 @@ exports.submitAnswer = asyncHandler(async (req, res) => {
             RETURNING team1_score, team2_score, rope_position`;
         updateParams = [newQ.question, newQ.answer, gameId];
     }
-        // Two different queries — correct answer moves rope, wrong doesn't
-        // Both replace the current question with a new one either way
+    // Two different queries — correct answer moves rope, wrong doesn't
+    // Both replace the current question with a new one either way
 
     //Step 5 — check if someone won instantly
     const updated = await pool.query(updateQuery, updateParams);
@@ -404,7 +404,7 @@ exports.submitAnswer = asyncHandler(async (req, res) => {
 
     let winner = null;
     if (row.rope_position <= -100) winner = 'team1';
-    if (row.rope_position >= 100)  winner = 'team2';
+    if (row.rope_position >= 100) winner = 'team2';
     // If rope crossed the threshold → instant win
     // Doesn't wait for timer — pure domination win
     if (winner) {
@@ -424,10 +424,10 @@ exports.submitAnswer = asyncHandler(async (req, res) => {
         winner,
     });
     // Frontend receives this and:
-        // 1. Animates rope to new position
-        // 2. Updates score display
-        // 3. Shows new question
-        // 4. If winner exists -> ends game
+    // 1. Animates rope to new position
+    // 2. Updates score display
+    // 3. Shows new question
+    // 4. If winner exists -> ends game
 });
 
 // Function 3 — endGame
@@ -456,7 +456,7 @@ exports.endGame = asyncHandler(async (req, res) => {
 
     if (result.rows.length === 0)
         throw new AppError('Game not found', 404);
-      // If no rows updated = gameId doesn't exist in DB
+    // If no rows updated = gameId doesn't exist in DB
 
 
     res.json(result.rows[0]);

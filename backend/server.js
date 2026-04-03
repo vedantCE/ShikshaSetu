@@ -6,7 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const tugOfWarRoutes = require('./routes/tugOfWarRoutes');
 const tracingRoutes = require('./routes/tracingRoutes');
-// const errorHandler = requier('./middleware/errorHandler')
+
 const errorHandler = require('./middleware/errorHandler');
 const app = express();
 

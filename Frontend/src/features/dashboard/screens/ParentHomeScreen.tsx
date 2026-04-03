@@ -133,9 +133,9 @@ const ParentHomeScreen = ({ navigation }: any) => {
                                             </View>
                                         </View>
 
-                                        <Pressable style={styles.reportBtn}>
+                                        {/* <Pressable style={styles.reportBtn}>
                                             <Text style={styles.reportBtnText}>View Detailed Report</Text>
-                                        </Pressable>
+                                        </Pressable> */}
                                     </View>
                                 </Pressable>
                             );

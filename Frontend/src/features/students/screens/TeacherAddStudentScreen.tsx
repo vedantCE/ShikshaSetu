@@ -16,9 +16,11 @@ import { useAuth } from '../../auth/context/AuthContext';
 import { createChild } from '../../auth/services/studentApi';
 import { launchCamera, launchImageLibrary, type ImagePickerResponse } from 'react-native-image-picker';
 import { Picker } from '@react-native-picker/picker';
+import LoaderScreen from '../../../components/LoaderScreen';
+import { useDeferredLoader } from '../../../utils/useDeferredLoader';
 
 const TeacherAddStudentScreen = ({ navigation }: any) => {
-  const { user, addStudent, selectStudent } = useAuth();
+  const { user, addStudent } = useAuth();
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [disorder, setDisorder] = useState('Unknown');
@@ -27,6 +29,7 @@ const TeacherAddStudentScreen = ({ navigation }: any) => {
   const [address, setAddress] = useState('');
   const [avatar, setAvatar] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const showSavingLoader = useDeferredLoader(isSaving);
 
   const handleAdd = async () => {
     const errors: string[] = [];
@@ -60,7 +63,6 @@ const TeacherAddStudentScreen = ({ navigation }: any) => {
         disorder: child.disorder_type || disorder.trim(),
         avatar: child.image_url || undefined,
       });
-      selectStudent(String(child.student_id));
 
       Alert.alert(
         'Success 🎉',
@@ -118,6 +120,10 @@ const TeacherAddStudentScreen = ({ navigation }: any) => {
       { text: 'Cancel', style: 'cancel' },
     ]);
   };
+
+  if (showSavingLoader) {
+    return <LoaderScreen text="Preparing your fun learning experience..." />;
+  }
 
   return (
     <SafeAreaView style={styles.root}>

@@ -9,7 +9,9 @@ import {
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigation/RootNavigator';
 import { SHAPES } from '../constants/Shapes';
-import { getProgress, BaseProgress } from '../storage/progressStore';
+import { getProgress, initializeProgress, BaseProgress } from '../storage/progressStore';
+import { useAuth } from '../../auth/context/AuthContext';
+import LoaderScreen from '../../../components/LoaderScreen';
 
 type ShapeGridScreenProps = {
     navigation: NativeStackNavigationProp<RootStackParamList, 'ShapeGrid'>;
@@ -19,17 +21,40 @@ export const ShapeGridScreen: React.FC<ShapeGridScreenProps> = ({
     navigation,
 }) => {
     const [progress, setProgress] = useState<BaseProgress[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const { currentStudent, user } = useAuth();
+    const progressScope = String(currentStudent?.id || user?.user_id || 'guest');
 
     const loadProgress = async () => {
-        const data = await getProgress('shapes');
-        setProgress(data);
+        setIsLoading(true);
+        try {
+            console.log('[ShapeGrid] loading progress', {
+                category: 'shapes',
+                progressScope,
+            });
+            await initializeProgress('shapes', progressScope);
+            const data = await getProgress('shapes', progressScope);
+            setProgress(data);
+            console.log('[ShapeGrid] progress loaded', {
+                category: 'shapes',
+                progressScope,
+                completed: data.filter(i => i.stars > 0).length,
+                total: data.length,
+            });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     useEffect(() => {
         loadProgress();
         const unsubscribe = navigation.addListener('focus', loadProgress);
         return unsubscribe;
-    }, [navigation]);
+    }, [navigation, progressScope]);
+
+    if (isLoading) {
+        return <LoaderScreen text="Loading tracing progress..." />;
+    }
 
     const getStars = (shape: string): number => {
         return progress.find(p => p.item === shape)?.stars || 0;

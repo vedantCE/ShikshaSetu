@@ -25,7 +25,7 @@ const TeacherDashboardScreen = ({ navigation }: any) => {
       style={styles.profileCard}
       onPress={() => {
         selectStudent(item.id);
-        navigation.navigate('ActivityHub');
+        navigation.navigate('ActivityHub', { studentId: item.id });
       }}
     >
       <View style={styles.avatarContainer}>

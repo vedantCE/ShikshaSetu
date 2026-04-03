@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../../auth/services/studentApi';
+import { API_BASE_URL } from '../../../api/apiClient';
 
 export type TracingType = 'alphabet' | 'number';
 

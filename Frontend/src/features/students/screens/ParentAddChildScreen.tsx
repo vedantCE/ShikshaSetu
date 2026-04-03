@@ -14,15 +14,18 @@ import { useAuth } from '../../auth/context/AuthContext';
 import { createChild } from '../../auth/services/studentApi';
 import { launchCamera, launchImageLibrary, type ImagePickerResponse } from 'react-native-image-picker';
 import { Picker } from '@react-native-picker/picker';
+import LoaderScreen from '../../../components/LoaderScreen';
+import { useDeferredLoader } from '../../../utils/useDeferredLoader';
 
 const ParentAddChildScreen = ({ navigation }: any) => {
-  const { user, addStudent, selectStudent } = useAuth();
+  const { user, addStudent } = useAuth();
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [password, setPassword] = useState('');
   const [disorder, setDisorder] = useState('Unknown');
   const [avatar, setAvatar] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const showSavingLoader = useDeferredLoader(isSaving);
 
   const handleAdd = async () => {
     if (!name || !age || !password) {
@@ -58,7 +61,6 @@ const ParentAddChildScreen = ({ navigation }: any) => {
         disorder: child.disorder_type,
         avatar: child.image_url || undefined,
       });
-      selectStudent(String(child.student_id));
 
       Alert.alert(
         'Success',
@@ -117,6 +119,10 @@ const ParentAddChildScreen = ({ navigation }: any) => {
       { text: 'Cancel', style: 'cancel' },
     ]);
   };
+
+  if (showSavingLoader) {
+    return <LoaderScreen text="Preparing your fun learning experience..." />;
+  }
 
   return (
     <ScrollView style={styles.container}>

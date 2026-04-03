@@ -21,10 +21,19 @@ const STORAGE_KEYS = {
   shapes: '@shapes_progress',
 };
 
+const getScopedStorageKey = (category: string, scopeId?: string): string => {
+  const baseKey = STORAGE_KEYS[category as keyof typeof STORAGE_KEYS] || STORAGE_KEYS.letters;
+  const safeScope = String(scopeId || 'guest').replace(/[^a-zA-Z0-9:_-]/g, '_');
+  return `${baseKey}:${safeScope}`;
+};
+
 // Get progress for a specific category
-export const getProgress = async (category: string = 'letters'): Promise<BaseProgress[]> => {
+export const getProgress = async (
+  category: string = 'letters',
+  scopeId?: string
+): Promise<BaseProgress[]> => {
   try {
-    const key = STORAGE_KEYS[category as keyof typeof STORAGE_KEYS] || STORAGE_KEYS.letters;
+    const key = getScopedStorageKey(category, scopeId);
     const data = await AsyncStorage.getItem(key);
     return data ? JSON.parse(data) : [];
   } catch {
@@ -36,10 +45,11 @@ export const getProgress = async (category: string = 'letters'): Promise<BasePro
 export const saveProgress = async (
   category: string,
   item: string,
-  stars: number
+  stars: number,
+  scopeId?: string
 ): Promise<void> => {
   try {
-    const progress = await getProgress(category);
+    const progress = await getProgress(category, scopeId);
     const index = progress.findIndex(p => p.item === item);
 
     if (index >= 0) {
@@ -66,7 +76,7 @@ export const saveProgress = async (
       }
     }
 
-    const key = STORAGE_KEYS[category as keyof typeof STORAGE_KEYS] || STORAGE_KEYS.letters;
+    const key = getScopedStorageKey(category, scopeId);
     await AsyncStorage.setItem(key, JSON.stringify(progress));
   } catch (error) {
     console.error('Failed to save progress:', error);
@@ -74,8 +84,11 @@ export const saveProgress = async (
 };
 
 // Initialize progress for a category
-export const initializeProgress = async (category: string = 'letters'): Promise<void> => {
-  const progress = await getProgress(category);
+export const initializeProgress = async (
+  category: string = 'letters',
+  scopeId?: string
+): Promise<void> => {
+  const progress = await getProgress(category, scopeId);
   if (progress.length === 0) {
     const firstItems: { [key: string]: string } = {
       letters: 'A',
@@ -84,7 +97,7 @@ export const initializeProgress = async (category: string = 'letters'): Promise<
     };
 
     const firstItem = firstItems[category] || firstItems.letters;
-    const key = STORAGE_KEYS[category as keyof typeof STORAGE_KEYS] || STORAGE_KEYS.letters;
+    const key = getScopedStorageKey(category, scopeId);
 
     await AsyncStorage.setItem(
       key,

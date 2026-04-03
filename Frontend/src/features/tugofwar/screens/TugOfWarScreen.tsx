@@ -22,6 +22,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useAuth } from '../../auth/context/AuthContext';
 import { startGame, submitAnswer, endGame } from '../services/tugOfWarApi';
+import LoaderScreen from '../../../components/LoaderScreen';
+import { useDeferredLoader } from '../../../utils/useDeferredLoader';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const ROPE_WIDTH = SCREEN_WIDTH - 40;
@@ -117,6 +119,7 @@ const TugOfWarScreen = ({ route, navigation }: any) => {
   const [team2Input, setTeam2Input] = useState('...');
   const [gameOver, setGameOver] = useState(false);
   const [loading, setLoading] = useState(true);
+  const showLoadingScreen = useDeferredLoader(loading);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const aiRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -366,14 +369,11 @@ const TugOfWarScreen = ({ route, navigation }: any) => {
 
   //Render
   if (loading) {
-    return (
-      <SafeAreaView style={styles.root}>
-        <View style={styles.loadingContainer}>
-          <Icon name="loading" size={48} color="#3B82F6" />
-          <Text style={styles.loadingText}>Setting up the arena...</Text>
-        </View>
-      </SafeAreaView>
-    );
+    if (showLoadingScreen) {
+      return <LoaderScreen text="Setting up the arena..." />;
+    }
+
+    return null;
   }
 
   return (

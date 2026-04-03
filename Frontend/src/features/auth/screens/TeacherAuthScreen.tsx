@@ -3,9 +3,10 @@ import { View, Text, Alert, TouchableOpacity } from 'react-native';
 import { useAuth } from '../../auth/context/AuthContext'; // adjust path
 import { AuthLayout } from '../components/AuthLayout';
 import { CustomInput } from '../components/CustomInput';
-import { PencilLoader } from '../components/PencilLoader'; // your loader
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { loginUser, registerUser } from '../services/authApi';
+import LoaderScreen from '../../../components/LoaderScreen';
+import { useDeferredLoader } from '../../../utils/useDeferredLoader';
 
 export const TeacherAuthScreen = ({ navigation }: any) => {
   const { login } = useAuth();
@@ -24,6 +25,7 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
 
   // Loading state (for smooth UX with your pencil loader)
   const [loading, setLoading] = useState(false);
+  const showLoader = useDeferredLoader(loading);
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
@@ -210,8 +212,7 @@ export const TeacherAuthScreen = ({ navigation }: any) => {
         />
       )}
 
-      {/* Your beautiful pencil loader */}
-      {loading && <PencilLoader />}
+      {showLoader && <LoaderScreen text={isSignup ? 'Creating your teacher account...' : 'Signing you in...'} />}
     </AuthLayout>
   );
 };

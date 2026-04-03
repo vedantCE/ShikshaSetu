@@ -6,12 +6,13 @@ import {
     ScrollView,
     Pressable,
     Dimensions,
-    ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAuth } from '../../auth/context/AuthContext';
 import { fetchStudentTracingProgress, type StudentTracingProgressResponse } from '../../tracing/services/tracingApi';
+import LoaderScreen from '../../../components/LoaderScreen';
+import { useDeferredLoader } from '../../../utils/useDeferredLoader';
 
 const { width } = Dimensions.get('window');
 
@@ -27,6 +28,10 @@ const LearningAnalyticsScreen = ({ navigation }: any) => {
 
         return students?.[0] ?? null;
     }, [currentStudent, students]);
+
+    const shouldShowLoader = useDeferredLoader(
+        loading || (Boolean(targetStudent?.id) && !progress),
+    );
 
     useEffect(() => {
         const loadProgress = async () => {
@@ -103,6 +108,10 @@ const LearningAnalyticsScreen = ({ navigation }: any) => {
         },
     ];
 
+    if (shouldShowLoader) {
+        return <LoaderScreen text="Preparing your fun learning experience..." />;
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             {/* Header */}
@@ -121,13 +130,6 @@ const LearningAnalyticsScreen = ({ navigation }: any) => {
                     <Text style={styles.studentBannerLabel}>Showing data for</Text>
                     <Text style={styles.studentBannerName}>{targetStudent?.name || 'No child selected'}</Text>
                 </View>
-
-                {loading ? (
-                    <View style={styles.loadingCard}>
-                        <ActivityIndicator size="small" color="#1B337F" />
-                        <Text style={styles.loadingText}>Loading tracing insights...</Text>
-                    </View>
-                ) : null}
 
                 {/* Top Mini Stats */}
                 <View style={styles.topStatsRow}>

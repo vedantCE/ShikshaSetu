@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAuth } from '../../auth/context/AuthContext';
 import { fetchStudentAnalytics, type AnalyticsResponse } from '../../auth/services/studentApi';
+import { fetchStudentTracingProgress, type StudentTracingProgressResponse } from '../../tracing/services/tracingApi';
 import { palette, metrics, typography } from '../../../theme/design';
+import LoaderScreen from '../../../components/LoaderScreen';
+import { useDeferredLoader } from '../../../utils/useDeferredLoader';
 
 const AnalyticsScreen = ({ route }: any) => {
     const { user, students } = useAuth();
@@ -12,8 +15,10 @@ const AnalyticsScreen = ({ route }: any) => {
     const student = students.find(s => s.id === studentId);
 
     const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);
+    const [tracingProgress, setTracingProgress] = useState<StudentTracingProgressResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const showLoader = useDeferredLoader(loading || (!analytics && !error));
 
     useEffect(() => {
         loadAnalytics();
@@ -29,14 +34,31 @@ const AnalyticsScreen = ({ route }: any) => {
         try {
             setLoading(true);
             setError(null);
-            const data = await fetchStudentAnalytics(user.token, studentId);
-            setAnalytics(data);
+            const [analyticsResult, tracingResult] = await Promise.allSettled([
+                fetchStudentAnalytics(user.token, studentId),
+                fetchStudentTracingProgress(user.token, studentId),
+            ]);
+
+            if (analyticsResult.status === 'fulfilled') {
+                setAnalytics(analyticsResult.value);
+            } else {
+                setAnalytics(null);
+            }
+
+            if (tracingResult.status === 'fulfilled') {
+                setTracingProgress(tracingResult.value);
+            } else {
+                setTracingProgress(null);
+            }
         } catch (err: any) {
             setError(err?.message || 'Failed to load analytics');
         } finally {
             setLoading(false);
         }
     };
+
+    const alphabetPercent = Math.round(((tracingProgress?.alphabet_progress ?? 0) / 3) * 100);
+    const numberPercent = Math.round(((tracingProgress?.number_progress ?? 0) / 3) * 100);
 
     const getActivityIcon = (type: string) => {
         switch (type.toLowerCase()) {
@@ -59,14 +81,11 @@ const AnalyticsScreen = ({ route }: any) => {
     };
 
     if (loading) {
-        return (
-            <SafeAreaView style={styles.root}>
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color={palette.primary} />
-                    <Text style={styles.loadingText}>Loading analytics...</Text>
-                </View>
-            </SafeAreaView>
-        );
+        if (showLoader) {
+            return <LoaderScreen text="Preparing your fun learning experience..." />;
+        }
+
+        return null;
     }
 
     if (error) {
@@ -119,6 +138,32 @@ const AnalyticsScreen = ({ route }: any) => {
                         </View>
                     </View>
                 )}
+
+                {/* Tracing Progress */}
+                <Text style={styles.sectionTitle}>Tracing Progress</Text>
+                <View style={styles.card}>
+                    <View style={styles.breakdownRow}>
+                        <View style={[styles.iconWrap, { backgroundColor: '#DBEAFE' }]}>
+                            <Icon name="alphabetical-variant" size={24} color="#2563EB" />
+                        </View>
+                        <View style={styles.breakdownInfo}>
+                            <Text style={styles.breakdownTitle}>Alphabet Tracing</Text>
+                            <Text style={styles.breakdownSub}>{alphabetPercent}% completed</Text>
+                        </View>
+                    </View>
+                </View>
+
+                <View style={styles.card}>
+                    <View style={styles.breakdownRow}>
+                        <View style={[styles.iconWrap, { backgroundColor: '#D1FAE5' }]}>
+                            <Icon name="numeric" size={24} color="#10B981" />
+                        </View>
+                        <View style={styles.breakdownInfo}>
+                            <Text style={styles.breakdownTitle}>Number Tracing</Text>
+                            <Text style={styles.breakdownSub}>{numberPercent}% completed</Text>
+                        </View>
+                    </View>
+                </View>
 
                 {/* Activity Breakdown */}
                 <Text style={styles.sectionTitle}>Activity Breakdown</Text>

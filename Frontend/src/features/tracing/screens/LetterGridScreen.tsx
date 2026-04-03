@@ -9,7 +9,9 @@ import {
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigation/RootNavigator';
 import { ALPHABET } from '../constants/Alphabet';
-import { getProgress, BaseProgress } from '../storage/progressStore';
+import { getProgress, initializeProgress, BaseProgress } from '../storage/progressStore';
+import { useAuth } from '../../auth/context/AuthContext';
+import LoaderScreen from '../../../components/LoaderScreen';
 
 type LetterGridScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'LetterGrid'>;
@@ -19,45 +21,57 @@ export const LetterGridScreen: React.FC<LetterGridScreenProps> = ({
   navigation,
 }) => {
   const [progress, setProgress] = useState<BaseProgress[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { currentStudent, user } = useAuth();
+  const progressScope = String(currentStudent?.id || user?.user_id || 'guest');
 
   const loadProgress = async () => {
-    const data = await getProgress('letters');
-    setProgress(data);
+    setIsLoading(true);
+    try {
+      console.log('[LetterGrid] loading progress', {
+        category: 'letters',
+        progressScope,
+      });
+      await initializeProgress('letters', progressScope);
+      const data = await getProgress('letters', progressScope);
+      setProgress(data);
+      console.log('[LetterGrid] progress loaded', {
+        category: 'letters',
+        progressScope,
+        completed: data.filter(i => i.stars > 0).length,
+        total: data.length,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
     loadProgress();
 
-    // Refresh progress every time user returns to this screen
     const unsubscribe = navigation.addListener('focus', loadProgress);
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, progressScope]);
 
   const getStars = (letter: string): number => {
     return progress.find(p => p.item === letter)?.stars || 0;
   };
 
-  // Sequential unlocking: First letter is always unlocked, 
-  // each subsequent letter unlocks only if the previous letter has stars > 0
+  // Sequential unlocking: first letter is unlocked, then each next requires prior stars.
   const isUnlocked = (letter: string): boolean => {
-    const sequence = ALPHABET;
-    const firstItem = sequence[0];
+    const firstItem = ALPHABET[0];
 
-    // First item is always unlocked
     if (letter === firstItem) {
       return true;
     }
 
-    // Find the previous item in the sequence
-    const currentIndex = sequence.indexOf(letter);
+    const currentIndex = ALPHABET.indexOf(letter);
     if (currentIndex <= 0) {
-      return false; // Invalid or not found
+      return false;
     }
 
-    const previousItem = sequence[currentIndex - 1];
+    const previousItem = ALPHABET[currentIndex - 1];
     const previousStars = getStars(previousItem);
-
-    // Unlock only if previous item has been completed (stars > 0)
     return previousStars > 0;
   };
 
@@ -68,22 +82,19 @@ export const LetterGridScreen: React.FC<LetterGridScreenProps> = ({
     return (
       <TouchableOpacity
         style={[styles.letterBox, !unlocked && styles.locked]}
-        onPress={() =>
-          unlocked &&
-          navigation.navigate('Tracing', { letter: item })
-        }
+        onPress={() => unlocked && navigation.navigate('Tracing', { letter: item })}
         disabled={!unlocked}
       >
-        <Text style={[styles.letter, !unlocked && styles.lockedText]}>
-          {item}
-        </Text>
-        {unlocked && stars > 0 && (
-          <Text style={styles.stars}>{'⭐'.repeat(stars)}</Text>
-        )}
+        <Text style={[styles.letter, !unlocked && styles.lockedText]}>{item}</Text>
+        {unlocked && stars > 0 && <Text style={styles.stars}>{'⭐'.repeat(stars)}</Text>}
         {!unlocked && <Text style={styles.lockIcon}>🔒</Text>}
       </TouchableOpacity>
     );
   };
+
+  if (isLoading) {
+    return <LoaderScreen text="Loading tracing progress..." />;
+  }
 
   return (
     <View style={styles.container}>

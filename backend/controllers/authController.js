@@ -78,7 +78,7 @@ const asyncHandler = require('../middleware/asyncHandler');
 
 exports.register = asyncHandler(async (req, res) => {
     const { user_name, user_email, user_password, confirm_password,
-            contact_number, address, user_role } = req.body;
+        contact_number, address, user_role } = req.body;
 
     // Validation -> check inputs before touching DB        
     if (!user_name || !user_email || !user_password || !confirm_password || !user_role)

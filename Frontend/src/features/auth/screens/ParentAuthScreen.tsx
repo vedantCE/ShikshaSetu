@@ -3,11 +3,11 @@ import { Alert } from 'react-native';
 import { useAuth } from '../../auth/context/AuthContext'; // adjust path if needed
 import { AuthLayout } from '../components/AuthLayout';
 import { CustomInput } from '../components/CustomInput';
-import { PencilLoader } from '../components/PencilLoader';
 import { loginUser, registerUser } from '../services/authApi';
-import { fetchChildren } from '../services/studentApi';
+import LoaderScreen from '../../../components/LoaderScreen';
+import { useDeferredLoader } from '../../../utils/useDeferredLoader';
 export const ParentAuthScreen = ({ navigation }: any) => {
-  const { login, setStudents } = useAuth();
+  const { login } = useAuth();
 
   // Form state
   const [isSignup, setIsSignup] = useState(false);
@@ -21,6 +21,7 @@ export const ParentAuthScreen = ({ navigation }: any) => {
   const [secureTextConfirm, setSecureTextConfirm] = useState(true);
 // Loading state (required to show/hide the PencilLoader)
   const [loading, setLoading] = useState(false);
+  const showLoader = useDeferredLoader(loading);
 
 
   const handleSubmit = async () => {
@@ -47,7 +48,6 @@ export const ParentAuthScreen = ({ navigation }: any) => {
           token: response.token,
           name: response.user_name,
         });
-        setStudents([]);
         Alert.alert('Success', 'Parent account created!');
         navigation.replace('ParentDashboardScreen');
       } else {
@@ -63,15 +63,6 @@ export const ParentAuthScreen = ({ navigation }: any) => {
           token: response.token,
           name: response.user_name,
         });
-        const children = await fetchChildren(response.token);
-        setStudents(
-          children.map((child) => ({
-            id: String(child.student_id),
-            name: child.student_name,
-            age: child.age,
-            disorder: child.disorder_type,
-          }))
-        );
         navigation.replace('ParentDashboardScreen');
       }
     } catch (error: any) {
@@ -209,7 +200,7 @@ export const ParentAuthScreen = ({ navigation }: any) => {
       )}
 
       {/* Loading indicator overlay on button */}
-      {loading && <PencilLoader />}
+      {showLoader && <LoaderScreen text={isSignup ? 'Creating your parent account...' : 'Signing you in...'} />}
     </AuthLayout>
   );
 };

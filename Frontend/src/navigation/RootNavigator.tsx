@@ -1,9 +1,10 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { View, ActivityIndicator } from 'react-native';
 import { useAuth } from '../features/auth/context/AuthContext';
 import { AuthProvider } from '../features/auth/context/AuthContext';
+import LoaderScreen from '../components/LoaderScreen';
+import { useDeferredLoader } from '../utils/useDeferredLoader';
 
 // Existing screens
 import { OnboardingScreen } from '../features/dashboard/screens/OnboardingScreen';
@@ -62,7 +63,7 @@ export type RootStackParamList = {
   TeacherDashboard: undefined;
   ParentAddChild: undefined;
   TeacherAddStudent: undefined;
-  ActivityHub: undefined;
+  ActivityHub: { studentId?: string } | undefined;
   MoreFeatures: undefined;
   Analytics: { studentId: string };
   AssessmentQuizHome: { studentId?: string } | undefined;
@@ -104,13 +105,14 @@ const SplashScreenWrapper = ({ navigation }: any) => {
 
 const AppNavigator = () => {
   const { user, isLoading } = useAuth();
+  const showBootLoader = useDeferredLoader(isLoading);
+
+  if (showBootLoader) {
+    return <LoaderScreen text="Preparing your fun learning experience..." />;
+  }
 
   if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F7F8FA' }}>
-        <ActivityIndicator size="large" color="#1B337F" />
-      </View>
-    );
+    return null;
   }
 
   return (

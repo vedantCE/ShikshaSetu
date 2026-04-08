@@ -11,6 +11,7 @@ type AuthenticatedUser = {
   email: string;
   name?: string;
   token: string;
+  [key: string]: any;
 };
 
 const getJwtExp = (token: string): number | null => {
@@ -59,6 +60,7 @@ type AuthContextType = {
   addStudent: (student: Student) => void;
   setStudents: (students: Student[] | ((prev: Student[]) => Student[])) => void;
   updateParentInfo: (name: string, email: string) => void;
+  updateUser: (nextUser: Partial<AuthenticatedUser>) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -75,6 +77,7 @@ const AuthContext = createContext<AuthContextType>({
   addStudent: () => { },
   setStudents: () => { },
   updateParentInfo: () => { },
+  updateUser: async () => { },
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -113,6 +116,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     checkToken();
   }, []);
 
+  const persistUser = async (nextUser: AuthenticatedUser) => {
+    const exp = getJwtExp(nextUser.token);
+    await AsyncStorage.setItem('@auth_user', JSON.stringify({ ...nextUser, exp }));
+  };
+
   const checkToken = async () => {
     try {
       const userData = await AsyncStorage.getItem('@auth_user');
@@ -127,11 +135,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           applyStudents([], 'checkToken:prehydrate-clear');
 
           setUser({
+            ...parsed,
             user_id: parsed.user_id,
             role: parsed.role,
             email: parsed.email,
             token: parsed.token,
-            name: parsed.name,
+            name: parsed.name ?? parsed.user_name,
           });
 
           // ─── ISSUE 1 FIX: Rehydrate children from backend on every app startup ──
@@ -180,7 +189,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Clear stale session student state before applying new account data.
     applyStudents([], 'login:pre-reset');
 
-    const userData = { user_id, role, email, token, name };
+    const userData = {
+      user_id,
+      role,
+      email,
+      token,
+      name,
+      user_name: name,
+      user_email: email,
+    };
     setUser(userData);
 
     if (role === 'parent') {
@@ -201,8 +218,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     if (rememberMe) {
-      const exp = getJwtExp(token);
-      await AsyncStorage.setItem('@auth_user', JSON.stringify({ ...userData, exp }));
+      await persistUser(userData);
     }
 
     console.log('[AuthContext] login:complete', {
@@ -263,8 +279,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const updateParentInfo = (name: string, email: string) => {
     if (user) {
-      setUser({ ...user, name, email });
+      const merged = { ...user, name, email, user_name: name, user_email: email };
+      setUser(merged);
+      persistUser(merged).catch((error) => {
+        console.warn('AuthContext: Failed to persist parent info update', error);
+      });
     }
+  };
+
+  const updateUser = async (nextUser: Partial<AuthenticatedUser>) => {
+    if (!user) return;
+
+    const merged = {
+      ...user,
+      ...nextUser,
+      name: nextUser.name ?? nextUser.user_name ?? user.name,
+      email: nextUser.email ?? nextUser.user_email ?? user.email,
+    };
+
+    setUser(merged);
+    await persistUser(merged);
   };
 
   return (
@@ -281,7 +315,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       selectStudent,
       addStudent,
       setStudents: replaceStudents,
-      updateParentInfo
+      updateParentInfo,
+      updateUser,
     }}>
       {children}
     </AuthContext.Provider>

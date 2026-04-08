@@ -55,7 +55,7 @@ const ParentHomeScreen = ({ navigation }: any) => {
                 {/* Your Children Section */}
                 <View style={styles.sectionHeader}>
                     <Text style={styles.sectionTitle}>Your Children</Text>
-                    <Pressable>
+                    <Pressable onPress={() => navigation.navigate('AllChildren')}>
                         <Text style={styles.seeAllText}>See all</Text>
                     </Pressable>
                 </View>
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
         paddingBottom: 24,
     },
     childCard: {
-        width: width * 0.75,
+        width: width * 0.85,
         backgroundColor: '#FFFFFF',
         borderRadius: 24,
         shadowColor: '#000',

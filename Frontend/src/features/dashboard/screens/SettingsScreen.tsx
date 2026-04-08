@@ -47,15 +47,9 @@ const SettingsScreen = ({ navigation }: any) => {
                 {/* Account Group */}
                 <Text style={styles.groupHeading}>ACCOUNT</Text>
                 <View style={styles.listGroup}>
-                    <Pressable style={styles.listItem} onPress={() => handleNotImplemented('Update Information')}>
-                        <View style={styles.listIconBg}>
-                            <Icon name="card-account-details-outline" size={20} color="#1B337F" />
-                        </View>
-                        <Text style={styles.listItemText}>Update Information</Text>
-                        <Icon name="chevron-right" size={24} color="#9CA3AF" />
-                    </Pressable>
+                    
                     <View style={styles.divider} />
-                    <Pressable style={styles.listItem} onPress={() => handleNotImplemented('Change Password')}>
+                    <Pressable style={styles.listItem} onPress={() => navigation.navigate('ChangePassword')}>
                         <View style={styles.listIconBg}>
                             <Icon name="lock-reset" size={20} color="#1B337F" />
                         </View>
@@ -93,7 +87,7 @@ const SettingsScreen = ({ navigation }: any) => {
                 {/* Support Group */}
                 <Text style={styles.groupHeading}>SUPPORT</Text>
                 <View style={styles.listGroup}>
-                    <Pressable style={styles.listItem} onPress={() => handleNotImplemented('Help Center')}>
+                    <Pressable style={styles.listItem} onPress={() => navigation.navigate('HelpCenter')}>
                         <View style={styles.listIconBg}>
                             <Icon name="help-circle-outline" size={20} color="#1B337F" />
                         </View>
@@ -101,7 +95,7 @@ const SettingsScreen = ({ navigation }: any) => {
                         <Icon name="chevron-right" size={24} color="#9CA3AF" />
                     </Pressable>
                     <View style={styles.divider} />
-                    <Pressable style={styles.listItem} onPress={() => handleNotImplemented('About Us')}>
+                    <Pressable style={styles.listItem} onPress={() => navigation.navigate('AboutUs')}>
                         <View style={styles.listIconBg}>
                             <Icon name="information-outline" size={20} color="#1B337F" />
                         </View>

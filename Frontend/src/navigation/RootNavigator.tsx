@@ -34,6 +34,9 @@ import AnalyticsScreen from '../features/dashboard/screens/AnalyticsScreen';
 import DifficultySelectScreen from '../features/tugofwar/screens/DifficultySelectScreen';
 import TugOfWarScreen from '../features/tugofwar/screens/TugOfWarScreen';
 import TugOfWarResultScreen from '../features/tugofwar/screens/TugOfWarResultScreen';
+import { CountingGameScreen } from '../features/activities/screens/CountingGameScreen';
+import { AdditionLevelSelectScreen } from '../features/activities/screens/AdditionLevelSelectScreen';
+import { AdditionBasketGameScreen } from '../features/activities/screens/AdditionBasketGameScreen';
 
 // Assessment Quiz screens
 import { HomeScreen as AssessmentQuizHomeScreen } from '../features/quiz/screens/HomeScreen';
@@ -47,7 +50,13 @@ import Object3DDetailScreen from '../features/object3d/screens/Object3DDetailScr
 import Object3DOnboardingScreen from '../features/object3d/screens/Object3DOnboardingScreen';
 import type { ObjectItem } from '../features/object3d/constants/data';
 
-import ChildProgressScreen from '../features/dashboard/screens/ChildProgressScreen';   
+import ChildProgressScreen from '../features/dashboard/screens/ChildProgressScreen';
+import AllChildrenScreen from '../features/dashboard/screens/parent/AllChildrenScreen';
+import EditProfileScreen from '../features/dashboard/screens/parent/EditProfileScreen';
+import NotificationsScreen from '../features/dashboard/screens/parent/NotificationsScreen';
+import ChangePasswordScreen from '../features/dashboard/screens/settings/ChangePasswordScreen';
+import HelpCenterScreen from '../features/dashboard/screens/settings/HelpCenterScreen';
+import AboutUsScreen from '../features/dashboard/screens/settings/AboutUsScreen';
 
 export type RootStackParamList = {
   Splash: undefined;
@@ -60,6 +69,12 @@ export type RootStackParamList = {
   ParentDashboardScreen: undefined;
   ParentMain: undefined;                    // ← added back
   ChildProgress: { childId: string };       // ← added back (was in old code)
+  AllChildren: undefined;
+  EditProfile: undefined;
+  Notifications: undefined;
+  ChangePassword: undefined;
+  HelpCenter: undefined;
+  AboutUs: undefined;
   TeacherDashboard: undefined;
   ParentAddChild: undefined;
   TeacherAddStudent: undefined;
@@ -82,6 +97,9 @@ export type RootStackParamList = {
     duration: number;
     difficulty: string;
   };
+  CountingGame: undefined;
+  AdditionLevelSelect: undefined;
+  AdditionBasketGame: { level: number };
   // Object3D routes
   Object3DHome: { filterFavorite?: boolean };
   Object3DDetail: { item: ObjectItem };
@@ -142,6 +160,36 @@ const AppNavigator = () => {
               <Stack.Screen
                 name="ChildProgress"
                 component={ChildProgressScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="AllChildren"
+                component={AllChildrenScreen}
+                options={{ title: 'All Children' }}
+              />
+              <Stack.Screen
+                name="EditProfile"
+                component={EditProfileScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="Notifications"
+                component={NotificationsScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="ChangePassword"
+                component={ChangePasswordScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="HelpCenter"
+                component={HelpCenterScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="AboutUs"
+                component={AboutUsScreen}
                 options={{ headerShown: false }}
               />
               <Stack.Screen
@@ -212,6 +260,21 @@ const AppNavigator = () => {
           <Stack.Screen
             name="TugOfWarResult"
             component={TugOfWarResultScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="CountingGame"
+            component={CountingGameScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AdditionLevelSelect"
+            component={AdditionLevelSelectScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AdditionBasketGame"
+            component={AdditionBasketGameScreen}
             options={{ headerShown: false }}
           />
 

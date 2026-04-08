@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     View,
     Text,
@@ -11,16 +11,48 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAuth } from '../../auth/context/AuthContext';
+import { fetchStudentTracingProgress, type StudentTracingProgressResponse } from '../../tracing/services/tracingApi';
 
 const { width } = Dimensions.get('window');
 
 const ChildProgressScreen = ({ route, navigation }: any) => {
-    const { students } = useAuth();
+    const { user, students } = useAuth();
     const childId = route.params?.childId;
+    const [progress, setProgress] = useState<StudentTracingProgressResponse | null>(null);
+    const [loadingProgress, setLoadingProgress] = useState(true);
 
     const child = useMemo(() => {
         return students?.find((s: any) => s.id === childId) || students?.[0] || { name: 'Child', age: 8 };
     }, [students, childId]);
+
+    const activeChildId = String(childId || child?.id || '');
+
+    useEffect(() => {
+        const loadProgress = async () => {
+            if (!user?.token || !activeChildId) {
+                setLoadingProgress(false);
+                setProgress(null);
+                return;
+            }
+
+            try {
+                setLoadingProgress(true);
+                const data = await fetchStudentTracingProgress(user.token, activeChildId);
+                setProgress(data);
+            } catch (error) {
+                console.log('Failed to load child tracing progress', error);
+                setProgress(null);
+            } finally {
+                setLoadingProgress(false);
+            }
+        };
+
+        loadProgress();
+    }, [user?.token, activeChildId]);
+
+    const alphabetPercent = Math.round(((progress?.alphabet_progress ?? 0) / 3) * 100);
+    const numberPercent = Math.round(((progress?.number_progress ?? 0) / 3) * 100);
+    const overallPercent = Math.round((alphabetPercent + numberPercent) / 2);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -38,24 +70,31 @@ const ChildProgressScreen = ({ route, navigation }: any) => {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
 
                 {/* Profile Section */}
-                <View style={styles.profileSection}>
-                    <View style={styles.avatarContainer}>
-                        {child.avatar ? (
-                            <Image source={{ uri: child.avatar }} style={styles.avatar} />
-                        ) : (
-                            <Image source={require('../assets/Homescreen/student.png')} style={styles.avatar} />
-                        )}
-                        <View style={styles.onlineBadge} />
-                    </View>
-                    <Text style={styles.profileName}>{child.name}</Text>
-                    <View style={styles.profileMeta}>
-                        <View style={styles.levelBadge}>
-                            <Text style={styles.levelText}>Level 4 Explorer</Text>
-                        </View>
-                        <Text style={styles.activeText}>• Active 2h ago</Text>
-                    </View>
-                </View>
+               <View style={styles.profileSection}>
 
+    {/* LEFT: Avatar */}
+    <View style={styles.avatarContainer}>
+        {child.avatar ? (
+            <Image source={{ uri: child.avatar }} style={styles.avatar} />
+        ) : (
+            <Image source={require('../assets/Homescreen/student.png')} style={styles.avatar} />
+        )}
+        <View style={styles.onlineBadge} />
+    </View>
+
+    {/* RIGHT: Info */}
+    <View style={styles.profileInfo}>
+        <Text style={styles.profileName}>{child.name}</Text>
+
+        <View style={styles.profileMeta}>
+            <View style={styles.levelBadge}>
+                <Text style={styles.levelText}>Level 4 Explorer</Text>
+            </View>
+            <Text style={styles.activeText}>• Active 2h ago</Text>
+        </View>
+    </View>
+
+</View>
                 {/* Tabs */}
                 <View style={styles.tabsRow}>
                     <View style={[styles.tab, styles.activeTab]}>
@@ -101,47 +140,64 @@ const ChildProgressScreen = ({ route, navigation }: any) => {
                     </View>
                 </View>
 
-                {/* Subject Mastery */}
+                {/* Tracing Mastery */}
                 <View style={styles.cardContainer}>
                     <View style={styles.cardHeader}>
-                        <Text style={styles.cardTitle}>Subject Mastery</Text>
-                        <Pressable>
-                            <Text style={styles.viewAllText}>View All</Text>
-                        </Pressable>
+                        <Text style={styles.cardTitle}>Tracing Mastery</Text>
+                        <Text style={styles.lastUpdatedText}>
+                            {progress?.last_tracing_update
+                                ? `Updated ${new Date(progress.last_tracing_update).toLocaleDateString('en-IN', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                })}`
+                                : 'No recent update'}
+                        </Text>
                     </View>
 
-                    <View style={styles.progressItem}>
-                        <View style={styles.progressLabelRow}>
-                            <View style={styles.dotMath} />
-                            <Text style={styles.subjectName}>Mathematics</Text>
-                            <Text style={styles.subjectPercent}>88%</Text>
+                    {loadingProgress ? (
+                        <View style={styles.loadingProgressWrap}>
+                            <Text style={styles.loadingProgressText}>Loading progress...</Text>
                         </View>
-                        <View style={styles.progressBarBg}>
-                            <View style={[styles.progressBarFill, styles.bgMath, { width: '88%' }]} />
+                    ) : !progress ? (
+                        <View style={styles.loadingProgressWrap}>
+                            <Text style={styles.noProgressText}>No progress data available</Text>
                         </View>
-                    </View>
+                    ) : (
+                        <>
+                            <View style={styles.progressItem}>
+                                <View style={styles.progressLabelRow}>
+                                    <View style={styles.dotAlphabet} />
+                                    <Text style={styles.subjectName}>Alphabet Progress</Text>
+                                    <Text style={styles.subjectPercent}>{alphabetPercent}%</Text>
+                                </View>
+                                <View style={styles.progressBarBg}>
+                                    <View style={[styles.progressBarFill, styles.bgAlphabet, { width: `${alphabetPercent}%` }]} />
+                                </View>
+                            </View>
 
-                    <View style={styles.progressItem}>
-                        <View style={styles.progressLabelRow}>
-                            <View style={styles.dotScience} />
-                            <Text style={styles.subjectName}>Science</Text>
-                            <Text style={styles.subjectPercent}>92%</Text>
-                        </View>
-                        <View style={styles.progressBarBg}>
-                            <View style={[styles.progressBarFill, styles.bgScience, { width: '92%' }]} />
-                        </View>
-                    </View>
+                            <View style={styles.progressItem}>
+                                <View style={styles.progressLabelRow}>
+                                    <View style={styles.dotNumbers} />
+                                    <Text style={styles.subjectName}>Numbers Progress</Text>
+                                    <Text style={styles.subjectPercent}>{numberPercent}%</Text>
+                                </View>
+                                <View style={styles.progressBarBg}>
+                                    <View style={[styles.progressBarFill, styles.bgNumbers, { width: `${numberPercent}%` }]} />
+                                </View>
+                            </View>
 
-                    <View style={styles.progressItem}>
-                        <View style={styles.progressLabelRow}>
-                            <View style={styles.dotLanguage} />
-                            <Text style={styles.subjectName}>Language Arts</Text>
-                            <Text style={styles.subjectPercent}>75%</Text>
-                        </View>
-                        <View style={styles.progressBarBg}>
-                            <View style={[styles.progressBarFill, styles.bgLanguage, { width: '75%' }]} />
-                        </View>
-                    </View>
+                            <View style={styles.progressItem}>
+                                <View style={styles.progressLabelRow}>
+                                    <View style={styles.dotOverall} />
+                                    <Text style={styles.subjectName}>Overall Progress</Text>
+                                    <Text style={styles.subjectPercent}>{overallPercent}%</Text>
+                                </View>
+                                <View style={styles.progressBarBg}>
+                                    <View style={[styles.progressBarFill, styles.bgOverall, { width: `${overallPercent}%` }]} />
+                                </View>
+                            </View>
+                        </>
+                    )}
                 </View>
 
                 {/* Parental Controls */}
@@ -235,17 +291,23 @@ const styles = StyleSheet.create({
         paddingBottom: 40,
     },
     profileSection: {
-        alignItems: 'center',
-        marginTop: 10,
-        marginBottom: 24,
+        flexDirection: 'row',   // For vertical 
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginTop: 10,
+    marginBottom: 24,
     },
     avatarContainer: {
         position: 'relative',
         marginBottom: 16,
     },
+    profileInfo: {
+    marginLeft: 16,
+    flex: 1,
+},
     avatar: {
-        width: 100,
-        height: 100,
+        width: 80,
+        height: 80,
         borderRadius: 50,
         borderWidth: 4,
         borderColor: '#FFFFFF',
@@ -415,10 +477,10 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         color: '#1A1A2E',
     },
-    viewAllText: {
-        fontSize: 14,
+    lastUpdatedText: {
+        fontSize: 11,
         fontWeight: '600',
-        color: '#1B337F',
+        color: '#6B7280',
     },
     progressItem: {
         marginBottom: 16,
@@ -428,9 +490,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 8,
     },
-    dotMath: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#3B82F6', marginRight: 8 },
-    dotScience: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#10B981', marginRight: 8 },
-    dotLanguage: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#F59E0B', marginRight: 8 },
+    dotAlphabet: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#2563EB', marginRight: 8 },
+    dotNumbers: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#059669', marginRight: 8 },
+    dotOverall: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#7C3AED', marginRight: 8 },
     subjectName: {
         flex: 1,
         fontSize: 14,
@@ -451,9 +513,22 @@ const styles = StyleSheet.create({
         height: '100%',
         borderRadius: 4,
     },
-    bgMath: { backgroundColor: '#3B82F6' },
-    bgScience: { backgroundColor: '#10B981' },
-    bgLanguage: { backgroundColor: '#F59E0B' },
+    bgAlphabet: { backgroundColor: '#2563EB' },
+    bgNumbers: { backgroundColor: '#059669' },
+    bgOverall: { backgroundColor: '#7C3AED' },
+    loadingProgressWrap: {
+        paddingVertical: 8,
+    },
+    loadingProgressText: {
+        fontSize: 14,
+        color: '#6B7280',
+        fontWeight: '500',
+    },
+    noProgressText: {
+        fontSize: 14,
+        color: '#6B7280',
+        fontWeight: '500',
+    },
     sectionHeading: {
         fontSize: 13,
         fontWeight: '700',

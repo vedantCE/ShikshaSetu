@@ -1,11 +1,12 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
+require('dotenv').config({ path: `${__dirname}/.env` });
 
 const authRoutes = require('./routes/authRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const tugOfWarRoutes = require('./routes/tugOfWarRoutes');
 const tracingRoutes = require('./routes/tracingRoutes');
+const supportRoutes = require('./routes/supportRoutes');
 
 const errorHandler = require('./middleware/errorHandler');
 const app = express();
@@ -17,6 +18,7 @@ app.use('/auth', authRoutes);
 app.use('/', tracingRoutes);
 app.use('/students', studentRoutes);
 app.use('/tugofwar', tugOfWarRoutes);
+app.use('/', supportRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'ShikshaSetu Backend API' });

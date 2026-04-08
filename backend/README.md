@@ -12,6 +12,9 @@ npm install
 DATABASE_URL=postgresql://<user>:<password>@<host>/<db>?sslmode=require
 JWT_SECRET=your_jwt_secret_key_here
 PORT=5000
+SMTP_USER=yourgmail@gmail.com
+SMTP_APP_PASSWORD=your_gmail_app_password
+SUPPORT_RECIPIENTS=dev1@gmail.com,dev2@gmail.com,dev3@gmail.com,dev4@gmail.com
 ```
 
 3. Start server:
@@ -106,3 +109,20 @@ Returns tracing progress for one student if the logged-in user is mapped to that
 
 Optional query params:
 - `includeStars=true`
+
+### POST /send-help
+Send help/support message to team email recipients (requires JWT).
+```json
+Headers: { "Authorization": "Bearer <token>" }
+Body:
+{
+  "name": "Parent Name",
+  "email": "parent@example.com",
+  "message": "Need help with onboarding"
+}
+```
+
+Notes:
+- Uses Gmail SMTP via Nodemailer
+- Sends to all recipients from SUPPORT_RECIPIENTS
+- Sets reply-to as user email so team can reply directly

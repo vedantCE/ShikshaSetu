@@ -271,6 +271,56 @@ export const ActivityHubScreen = ({ navigation, route }: Props) => {
           </ScalePressable>
         </Animated.View>
 
+        {/* 4.5.5️⃣ COUNTING GAME CARD */}
+        <Animated.View entering={ZoomIn.delay(680).springify()}>
+          <ScalePressable
+            onPress={() => navigation.navigate('CountingGame')}
+            style={styles.puzzleCard}
+          >
+            <LinearGradient
+              colors={['#E0F7FA', '#B2EBF2']}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+              style={styles.puzzleGradient}
+            >
+              <View style={styles.puzzleContent}>
+                <View>
+                  <Text style={styles.puzzleTitle}>Counting Game</Text>
+                  <Text style={styles.puzzleSubtitle}>1 to 10 Numbers Fun</Text>
+                </View>
+                <View style={[styles.playButtonProps, { backgroundColor: '#00ACC1' }]}>
+                  <Text style={styles.playButtonText}>Play</Text>
+                  <Icon name="numeric-1-box-multiple-outline" size={20} color="#FFF" />
+                </View>
+              </View>
+            </LinearGradient>
+          </ScalePressable>
+        </Animated.View>
+
+        {/* 4.5.6️⃣ ADDITION BASKET GAME CARD */}
+        <Animated.View entering={ZoomIn.delay(690).springify()}>
+          <ScalePressable
+            onPress={() => navigation.navigate('AdditionLevelSelect')}
+            style={styles.puzzleCard}
+          >
+            <LinearGradient
+              colors={['#FFFDE7', '#FFF9C4']}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+              style={styles.puzzleGradient}
+            >
+              <View style={styles.puzzleContent}>
+                <View>
+                  <Text style={styles.puzzleTitle}>Basket Math</Text>
+                  <Text style={styles.puzzleSubtitle}>Add Apples to the Basket</Text>
+                </View>
+                <View style={[styles.playButtonProps, { backgroundColor: '#FF8F00' }]}>
+                  <Text style={styles.playButtonText}>Play</Text>
+                  <Icon name="basket-outline" size={20} color="#FFF" />
+                </View>
+              </View>
+            </LinearGradient>
+          </ScalePressable>
+        </Animated.View>
+
         {/* 4.6️⃣ 3D LEARNING CARD */}
         <Animated.View entering={ZoomIn.delay(700).springify()}>
           <ScalePressable

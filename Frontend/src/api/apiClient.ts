@@ -18,7 +18,7 @@ export const API_BASE_URL =
     (DEV_HOST
         ? `http://${DEV_HOST}:5001`
         : Platform.OS === 'android'
-            ? 'http://10.12.138.38:5001'
+            ? 'http://10.0.2.2:5001'
             : 'http://localhost:5001');
 
 // Public request (no token) —>used by login/register 
@@ -38,7 +38,7 @@ export async function publicRequest<T>(
 export async function authedRequest<T>(
     token: string,
     path: string,
-    method: 'GET' | 'POST',
+    method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE',
     payload?: unknown
 ): Promise<T> {
     let response: Response;

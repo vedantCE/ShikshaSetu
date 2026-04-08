@@ -76,6 +76,34 @@ const pool = require('../config/db');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../middleware/asyncHandler');
 
+const NON_EDITABLE_FIELDS = new Set([
+    'user_id',
+    'user_role',
+    'user_password',
+    'created_at',
+    'updated_at',
+]);
+
+const toInputType = (columnName, dataType) => {
+    if (columnName.includes('email')) return 'email';
+    if (columnName.includes('avatar') || columnName.includes('image')) return 'image';
+    if (dataType.includes('int') || dataType.includes('numeric') || dataType.includes('double')) return 'number';
+    if (dataType === 'boolean') return 'boolean';
+    return 'text';
+};
+
+const toLabel = (columnName) =>
+    columnName
+        .replace(/^user_/, '')
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+
+const sanitizeUserRow = (row) => {
+    if (!row) return null;
+    const { user_password, ...safeRow } = row;
+    return safeRow;
+};
+
 exports.register = asyncHandler(async (req, res) => {
     const { user_name, user_email, user_password, confirm_password,
         contact_number, address, user_role } = req.body;
@@ -151,4 +179,143 @@ exports.login = asyncHandler(async (req, res) => {
         user_id: user.user_id, user_role: user.user_role,
         user_name: user.user_name, token
     });
+});
+
+exports.getProfileSchema = asyncHandler(async (req, res) => {
+    if (!req.user?.user_id)
+        throw new AppError('Unauthorized', 401);
+
+    const result = await pool.query(
+        `SELECT column_name, data_type, is_nullable
+         FROM information_schema.columns
+         WHERE table_schema = 'public' AND table_name = 'users'
+         ORDER BY ordinal_position`
+    );
+
+    const fields = result.rows.map((column) => {
+        const key = column.column_name;
+        const editable = !NON_EDITABLE_FIELDS.has(key);
+
+        return {
+            key,
+            label: toLabel(key),
+            type: toInputType(key, column.data_type),
+            editable,
+            required: column.is_nullable === 'NO' && editable,
+        };
+    });
+
+    res.json({ fields });
+});
+
+exports.getProfile = asyncHandler(async (req, res) => {
+    const { user_id } = req.user;
+
+    const result = await pool.query(
+        'SELECT * FROM users WHERE user_id = $1 LIMIT 1',
+        [user_id]
+    );
+
+    if (result.rows.length === 0)
+        throw new AppError('User not found', 404);
+
+    res.json({ user: sanitizeUserRow(result.rows[0]) });
+});
+
+exports.updateParentProfile = asyncHandler(async (req, res) => {
+    const { user_id, user_role } = req.user;
+    const updatedFields = req.body?.updatedFields;
+
+    if (user_role !== 'parent')
+        throw new AppError('Only parent users can update this profile', 403);
+
+    if (!updatedFields || typeof updatedFields !== 'object')
+        throw new AppError('updatedFields object is required', 400);
+
+    const columnsResult = await pool.query(
+        `SELECT column_name, data_type, is_nullable
+         FROM information_schema.columns
+         WHERE table_schema = 'public' AND table_name = 'users'`
+    );
+
+    const columnsMap = new Map(
+        columnsResult.rows.map((column) => [column.column_name, column])
+    );
+
+    const changes = [];
+    const values = [];
+    const changedKeys = [];
+
+    for (const [key, rawValue] of Object.entries(updatedFields)) {
+        const column = columnsMap.get(key);
+        if (!column || NON_EDITABLE_FIELDS.has(key)) continue;
+
+        const value = typeof rawValue === 'string' ? rawValue.trim() : rawValue;
+
+        if (column.is_nullable === 'NO' && (value === '' || value === null || value === undefined)) {
+            throw new AppError(`${toLabel(key)} cannot be empty`, 400);
+        }
+
+        if (key.includes('email') && typeof value === 'string') {
+            const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+            if (!isValidEmail)
+                throw new AppError('Please enter a valid email address', 400);
+        }
+
+        values.push(value);
+        changes.push(`${key} = $${values.length}`);
+        changedKeys.push(key);
+    }
+
+    if (changes.length === 0)
+        throw new AppError('No editable fields provided', 400);
+
+    const hasUpdatedAt = columnsMap.has('updated_at');
+    if (hasUpdatedAt) {
+        changes.push('updated_at = NOW()');
+    }
+
+    values.push(user_id);
+
+    const result = await pool.query(
+        `UPDATE users
+         SET ${changes.join(', ')}
+         WHERE user_id = $${values.length}
+         RETURNING *`,
+        values
+    );
+
+    if (result.rows.length === 0)
+        throw new AppError('User not found', 404);
+
+    res.json({
+        user: sanitizeUserRow(result.rows[0]),
+        updatedKeys: changedKeys,
+    });
+});
+
+exports.changePassword = asyncHandler(async (req, res) => {
+    const { user_id } = req.user;
+    const { userId, newPassword } = req.body;
+
+    if (!newPassword || typeof newPassword !== 'string')
+        throw new AppError('New password is required', 400);
+
+    if (newPassword.length < 6)
+        throw new AppError('Password must be at least 6 characters', 400);
+
+    if (userId && Number(userId) !== Number(user_id))
+        throw new AppError('You can only change your own password', 403);
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    const result = await pool.query(
+        'UPDATE users SET user_password = $1 WHERE user_id = $2 RETURNING user_id',
+        [hashedPassword, user_id]
+    );
+
+    if (result.rows.length === 0)
+        throw new AppError('User not found', 404);
+
+    res.json({ message: 'Password updated successfully' });
 });

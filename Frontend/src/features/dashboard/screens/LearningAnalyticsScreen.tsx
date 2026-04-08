@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -6,6 +6,8 @@ import {
     ScrollView,
     Pressable,
     Dimensions,
+    Modal,
+    Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -20,29 +22,42 @@ const LearningAnalyticsScreen = ({ navigation }: any) => {
     const { user, students, currentStudent } = useAuth();
     const [progress, setProgress] = useState<StudentTracingProgressResponse | null>(null);
     const [loading, setLoading] = useState(true);
+    const [selectedChild, setSelectedChild] = useState<any | null>(currentStudent || students?.[0] || null);
+    const [isChildSelectorOpen, setIsChildSelectorOpen] = useState(false);
 
-    const targetStudent = useMemo(() => {
-        if (currentStudent) {
-            return currentStudent;
+    useEffect(() => {
+        if (!students || students.length === 0) {
+            setSelectedChild(null);
+            setProgress(null);
+            setLoading(false);
+            return;
         }
 
-        return students?.[0] ?? null;
-    }, [currentStudent, students]);
+        if (!selectedChild) {
+            setSelectedChild(currentStudent || students[0]);
+            return;
+        }
+
+        const childStillExists = students.some((child: any) => child.id === selectedChild.id);
+        if (!childStillExists) {
+            setSelectedChild(currentStudent || students[0]);
+        }
+    }, [students, currentStudent, selectedChild]);
 
     const shouldShowLoader = useDeferredLoader(
-        loading || (Boolean(targetStudent?.id) && !progress),
+        loading || (Boolean(selectedChild?.id) && !progress),
     );
 
     useEffect(() => {
         const loadProgress = async () => {
-            if (!user?.token || !targetStudent?.id) {
+            if (!user?.token || !selectedChild?.id) {
                 setLoading(false);
                 return;
             }
 
             try {
                 setLoading(true);
-                const data = await fetchStudentTracingProgress(user.token, targetStudent.id);
+                const data = await fetchStudentTracingProgress(user.token, selectedChild.id);
                 setProgress(data);
             } catch (error) {
                 console.log('Failed to load tracing insights', error);
@@ -53,7 +68,7 @@ const LearningAnalyticsScreen = ({ navigation }: any) => {
         };
 
         loadProgress();
-    }, [user?.token, targetStudent?.id]);
+    }, [user?.token, selectedChild?.id]);
 
     const alphabetPercent = Math.round(((progress?.alphabet_progress ?? 0) / 3) * 100);
     const numberPercent = Math.round(((progress?.number_progress ?? 0) / 3) * 100);
@@ -112,6 +127,32 @@ const LearningAnalyticsScreen = ({ navigation }: any) => {
         return <LoaderScreen text="Preparing your fun learning experience..." />;
     }
 
+    if (!students || students.length === 0) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <View style={styles.header}>
+                    <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
+                        <Icon name="arrow-left" size={24} color="#1A1A2E" />
+                    </Pressable>
+                    <Text style={styles.headerTitle}>Learning Insights</Text>
+                    <View style={styles.calendarBtn} />
+                </View>
+
+                <View style={styles.emptyStateContainer}>
+                    <Icon name="account-child-outline" size={54} color="#9CA3AF" />
+                    <Text style={styles.emptyStateTitle}>No children found</Text>
+                    <Text style={styles.emptyStateSubtitle}>Add a child to start viewing insights.</Text>
+                    <Pressable
+                        style={styles.emptyStateButton}
+                        onPress={() => navigation.navigate('ParentAddChild')}
+                    >
+                        <Text style={styles.emptyStateButtonText}>Add Child</Text>
+                    </Pressable>
+                </View>
+            </SafeAreaView>
+        );
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             {/* Header */}
@@ -126,10 +167,13 @@ const LearningAnalyticsScreen = ({ navigation }: any) => {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-                <View style={styles.studentBanner}>
+                <Pressable style={styles.studentBanner} onPress={() => setIsChildSelectorOpen(true)}>
                     <Text style={styles.studentBannerLabel}>Showing data for</Text>
-                    <Text style={styles.studentBannerName}>{targetStudent?.name || 'No child selected'}</Text>
-                </View>
+                    <View style={styles.studentBannerNameRow}>
+                        <Text style={styles.studentBannerName}>{selectedChild?.name || 'No child selected'}</Text>
+                        <Icon name="chevron-down" size={22} color="#1A1A2E" />
+                    </View>
+                </Pressable>
 
                 {/* Top Mini Stats */}
                 <View style={styles.topStatsRow}>
@@ -269,6 +313,51 @@ const LearningAnalyticsScreen = ({ navigation }: any) => {
                 </Pressable>
 
             </ScrollView>
+
+            <Modal
+                visible={isChildSelectorOpen}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setIsChildSelectorOpen(false)}
+            >
+                <Pressable style={styles.modalBackdrop} onPress={() => setIsChildSelectorOpen(false)}>
+                    <Pressable style={styles.childSelectorCard} onPress={() => undefined}>
+                        <Text style={styles.childSelectorTitle}>Select Child</Text>
+
+                        {students.map((child: any) => {
+                            const isSelected = child.id === selectedChild?.id;
+
+                            return (
+                                <Pressable
+                                    key={String(child.id)}
+                                    style={[styles.childSelectorItem, isSelected && styles.childSelectorItemSelected]}
+                                    onPress={() => {
+                                        setSelectedChild(child);
+                                        setIsChildSelectorOpen(false);
+                                    }}
+                                >
+                                    {child?.avatar ? (
+                                        <Image source={{ uri: child.avatar }} style={styles.childSelectorAvatar} />
+                                    ) : (
+                                        <Image
+                                            source={require('../assets/Homescreen/student.png')}
+                                            style={styles.childSelectorAvatar}
+                                            resizeMode="cover"
+                                        />
+                                    )}
+
+                                    <View style={styles.childSelectorInfo}>
+                                        <Text style={styles.childSelectorName}>{child?.name || 'Child'}</Text>
+                                        <Text style={styles.childSelectorMeta}>Age {child?.age || 8}</Text>
+                                    </View>
+
+                                    {isSelected && <Icon name="check-circle" size={20} color="#1B337F" />}
+                                </Pressable>
+                            );
+                        })}
+                    </Pressable>
+                </Pressable>
+            </Modal>
         </SafeAreaView>
     );
 };
@@ -303,16 +392,107 @@ const styles = StyleSheet.create({
         marginHorizontal: 16,
         marginTop: 8,
         marginBottom: 16,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 14,
+        padding: 14,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
     },
     studentBannerLabel: {
         fontSize: 12,
         color: '#6B7280',
         marginBottom: 2,
     },
+    studentBannerNameRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
     studentBannerName: {
         fontSize: 20,
         fontWeight: '700',
         color: '#1A1A2E',
+    },
+    modalBackdrop: {
+        flex: 1,
+        backgroundColor: 'rgba(17,24,39,0.35)',
+        justifyContent: 'center',
+        paddingHorizontal: 20,
+    },
+    childSelectorCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        padding: 16,
+    },
+    childSelectorTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#1A1A2E',
+        marginBottom: 10,
+    },
+    childSelectorItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 12,
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+        borderWidth: 1,
+        borderColor: '#F3F4F6',
+        marginBottom: 8,
+    },
+    childSelectorItemSelected: {
+        borderColor: '#BFDBFE',
+        backgroundColor: '#EFF6FF',
+    },
+    childSelectorAvatar: {
+        width: 42,
+        height: 42,
+        borderRadius: 21,
+        backgroundColor: '#F3F4F6',
+    },
+    childSelectorInfo: {
+        flex: 1,
+        marginLeft: 10,
+    },
+    childSelectorName: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#1A1A2E',
+    },
+    childSelectorMeta: {
+        marginTop: 2,
+        fontSize: 12,
+        color: '#6B7280',
+    },
+    emptyStateContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 24,
+    },
+    emptyStateTitle: {
+        marginTop: 12,
+        fontSize: 22,
+        fontWeight: '700',
+        color: '#1A1A2E',
+    },
+    emptyStateSubtitle: {
+        marginTop: 8,
+        fontSize: 14,
+        color: '#6B7280',
+        textAlign: 'center',
+    },
+    emptyStateButton: {
+        marginTop: 18,
+        backgroundColor: '#1B337F',
+        borderRadius: 12,
+        paddingHorizontal: 18,
+        paddingVertical: 12,
+    },
+    emptyStateButtonText: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#FFFFFF',
     },
     loadingCard: {
         flexDirection: 'row',

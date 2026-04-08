@@ -1,4 +1,4 @@
-import { publicRequest } from '../../../api/apiClient';
+import { authedRequest, publicRequest } from '../../../api/apiClient';
 
 //Types
 type Role = 'parent' | 'teacher';
@@ -25,6 +25,15 @@ type AuthResponse = {
     token: string;
 };
 
+type ChangePasswordPayload = {
+    userId: number;
+    newPassword: string;
+};
+
+type ChangePasswordResponse = {
+    message: string;
+};
+
 //Functions
 export function registerUser(payload: RegisterPayload) {
     return publicRequest<AuthResponse>('/auth/register', payload);
@@ -32,4 +41,8 @@ export function registerUser(payload: RegisterPayload) {
 
 export function loginUser(payload: LoginPayload) {
     return publicRequest<AuthResponse>('/auth/login', payload);
+}
+
+export function changePassword(token: string, payload: ChangePasswordPayload) {
+    return authedRequest<ChangePasswordResponse>(token, '/auth/change-password', 'POST', payload);
 }

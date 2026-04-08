@@ -10,6 +10,7 @@ import {
     TouchableOpacity,
     StyleSheet,
     ScrollView,
+    Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -75,6 +76,19 @@ interface HomeScreenProps {
     route: HomeScreenRouteProp;
 }
 
+const QUIZ_IMAGE_URLS = [
+    'https://res.cloudinary.com/dfx3pzarw/image/upload/f_auto,q_auto,w_400/v1770644607/Question1_wljnr0.png',
+    'https://res.cloudinary.com/dfx3pzarw/image/upload/f_auto,q_auto,w_400/v1770644618/Question2_frdvnz.png',
+    'https://res.cloudinary.com/dfx3pzarw/image/upload/f_auto,q_auto,w_400/v1770644595/Question3_tlb5wt.png',
+    'https://res.cloudinary.com/dfx3pzarw/image/upload/f_auto,q_auto,w_400/v1770644606/Question4_msgdsf.png',
+    'https://res.cloudinary.com/dfx3pzarw/image/upload/f_auto,q_auto,w_400/v1770644559/Question5_yj0r4c.png',
+    'https://res.cloudinary.com/dfx3pzarw/image/upload/f_auto,q_auto,w_400/v1770644628/Question6_vcg9gp.png',
+    'https://res.cloudinary.com/dfx3pzarw/image/upload/f_auto,q_auto,w_400/v1770644568/Question7_dmzgiy.png',
+    'https://res.cloudinary.com/dfx3pzarw/image/upload/f_auto,q_auto,w_400/v1770644595/Question3_tlb5wt.png',
+    'https://res.cloudinary.com/dfx3pzarw/image/upload/f_auto,q_auto,w_400/v1770644632/Question9_oscbkl.png',
+    'https://res.cloudinary.com/dfx3pzarw/image/upload/f_auto,q_auto,w_400/v1770644632/Question10_blxvis.png',
+];
+
 const FocusAreaCard = ({ title, subtitle, color, icon }: any) => (
     <View style={styles.focusCard}>
         <View style={[styles.iconContainer, { backgroundColor: 'transparent' }]}>
@@ -87,6 +101,9 @@ const FocusAreaCard = ({ title, subtitle, color, icon }: any) => (
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => {
     const handleStartQuiz = () => {
+        QUIZ_IMAGE_URLS.forEach((url) => {
+            Image.prefetch(url);
+        });
         navigation.navigate('AssessmentQuiz', { studentId: route.params?.studentId });
     };
 

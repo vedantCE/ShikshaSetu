@@ -108,6 +108,25 @@ export const ActivityHubScreen = ({ navigation, route }: Props) => {
     return unsubscribe;
   }, [navigation, loadPoints]);
 
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      const backActionTypes = ['GO_BACK', 'POP', 'POP_TO_TOP'];
+      if (!backActionTypes.includes(e.data.action.type)) return;
+
+      e.preventDefault();
+
+      if (user?.role === 'teacher') {
+        navigation.navigate('TeacherDashboard');
+      } else if (user?.role === 'parent') {
+        navigation.navigate('ParentDashboardScreen');
+      } else {
+        navigation.dispatch(e.data.action);
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, user?.role]);
+
   const showComingSoon = (feature: string) => {
     Alert.alert('Coming Soon', `${feature} is coming soon! Stay tuned.`);
   };

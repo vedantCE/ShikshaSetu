@@ -3,7 +3,7 @@
  * One question at a time with smooth transitions
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -33,17 +33,20 @@ import {
 } from '../constants/theme';
 
 // Map question IDs to their corresponding images
+const withImageTransform = (url: string): string =>
+  url.replace('/image/upload/', '/image/upload/f_auto,q_auto,w_400/');
+
 const QUESTION_IMAGES: { [key: number]: any } = {
-  1: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644607/Question1_wljnr0.png",
-  2: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644618/Question2_frdvnz.png",
-  3: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644595/Question3_tlb5wt.png",
-  4: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644606/Question4_msgdsf.png",
-  5: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644559/Question5_yj0r4c.png",
-  6: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644628/Question6_vcg9gp.png",
-  7: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644568/Question7_dmzgiy.png",
-  8: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644595/Question3_tlb5wt.png",
-  9: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644632/Question9_oscbkl.png",
-  10: "https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644632/Question10_blxvis.png",
+  1: withImageTransform('https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644607/Question1_wljnr0.png'),
+  2: withImageTransform('https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644618/Question2_frdvnz.png'),
+  3: withImageTransform('https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644595/Question3_tlb5wt.png'),
+  4: withImageTransform('https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644606/Question4_msgdsf.png'),
+  5: withImageTransform('https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644559/Question5_yj0r4c.png'),
+  6: withImageTransform('https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644628/Question6_vcg9gp.png'),
+  7: withImageTransform('https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644568/Question7_dmzgiy.png'),
+  8: withImageTransform('https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644595/Question3_tlb5wt.png'),
+  9: withImageTransform('https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644632/Question9_oscbkl.png'),
+  10: withImageTransform('https://res.cloudinary.com/dfx3pzarw/image/upload/v1770644632/Question10_blxvis.png'),
 
 };
 
@@ -58,6 +61,35 @@ interface QuizScreenProps {
   navigation: QuizScreenNavigationProp;
   route: QuizScreenRouteProp;
 }
+
+const QuizImage: React.FC<{ uri: string }> = ({ uri }) => {
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    setLoaded(false);
+  }, [uri]);
+
+  console.log('🔗 Image URI:', uri);
+
+  return (
+    <View style={styles.quizImageWrapper}>
+      {!loaded && <View style={styles.imageSkeleton} />}
+      <Image
+        source={{ uri }}
+        style={[styles.questionImage, !loaded && styles.hiddenLoadingImage]}
+        resizeMode="cover"
+        onLoad={() => {
+          console.log('✅ Image loaded:', uri);
+          setLoaded(true);
+        }}
+        onError={(e) => {
+          console.log('❌ Image error:', uri, e.nativeEvent.error);
+          setLoaded(true);
+        }}
+      />
+    </View>
+  );
+};
 
 export const QuizScreen: React.FC<QuizScreenProps> = ({ navigation, route }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -124,11 +156,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({ navigation, route }) => 
         <QuestionCard questionText={currentQuestion.text} />
 
         <View style={styles.imageContainer}>
-          <Image
-            source={{uri:QUESTION_IMAGES[currentQuestion.id]}}
-            style={styles.questionImage}
-            resizeMode="cover"
-          />
+          <QuizImage uri={QUESTION_IMAGES[currentQuestion.id]} />
         </View>
 
         <View style={styles.optionsContainer}>
@@ -203,10 +231,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     marginVertical: SPACING.md,
   },
+  quizImageWrapper: {
+    width: '100%',
+    height: 200,
+  },
   questionImage: {
     width: '100%',
     height: 200,
     borderRadius: BORDER_RADIUS.xl,
+  },
+  imageSkeleton: {
+    width: '100%',
+    height: 200,
+    backgroundColor: '#E0E0E0',
+    borderRadius: BORDER_RADIUS.xl,
+  },
+  hiddenLoadingImage: {
+    opacity: 0,
+    position: 'absolute',
+    top: 0,
+    left: 0,
   },
   optionsContainer: {
     paddingHorizontal: SPACING.lg,

@@ -140,7 +140,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({ navigation, route }) => 
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <View style={styles.backArrow} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>ShikshSetu</Text>
+        <Text style={styles.headerTitle}>Nuviq</Text>
         <View style={{ width: 40 }} />
       </View>
 

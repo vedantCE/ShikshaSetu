@@ -169,7 +169,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                 {/* Result Title */}
                 <View style={styles.titleSection}>
                     <Text style={styles.resultCategory}>{category} Observed</Text>
-                    <Text style={styles.subtitle}>Based on ShikshSetu's pattern analysis.</Text>
+                    <Text style={styles.subtitle}>Based on Nuviq's pattern analysis.</Text>
                 </View>
 
                 {/* Scores Card */}
@@ -234,7 +234,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
 
                 {/* Disclaimer */}
                 <Text style={styles.disclaimerText}>
-                    Disclaimer: ShikshSetu is for informational purposes only and does not replace professional medical advice. Always seek the advice of your physician regarding any medical condition.
+                    Disclaimer: Nuviq is for informational purposes only and does not replace professional medical advice. Always seek the advice of your physician regarding any medical condition.
                 </Text>
 
                 <View style={styles.bottomDash} />

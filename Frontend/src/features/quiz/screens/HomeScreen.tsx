@@ -116,7 +116,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation, route }) => 
                     <View style={[styles.hamburgerLine, { width: 15 }]} />
                     <View style={styles.hamburgerLine} />
                 </View>
-                <Text style={styles.headerTitle}>ShikshSetu</Text>
+                <Text style={styles.headerTitle}>Nuviq</Text>
                 <View style={{ width: 24 }} />
             </View>
 
